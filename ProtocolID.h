@@ -109,6 +109,7 @@ typedef enum {
     ProtocolAngleSensorStaticError = ProtocolFunctionCALBase + 0,
 
     // Function-WIFI
+    /*
     ProtocolFunctionWIFIBase = 150,
     ProtocolWIFIConfigMode = ProtocolFunctionWIFIBase + 0,
     ProtocolWIFISSID = ProtocolFunctionWIFIBase + 1,
@@ -118,7 +119,7 @@ typedef enum {
     ProtocolWIFIGateway = ProtocolFunctionWIFIBase + 5,
     ProtocolWIFIDNS = ProtocolFunctionWIFIBase + 6,
     ProtocolWIFIConnectStatus = ProtocolFunctionWIFIBase + 7,
-
+    */
     // Function-TEST
     ProtocolTESTBase = 220,
     ProtocolUserParams = ProtocolTESTBase + 0,
