@@ -214,18 +214,18 @@ void loop()
               }
         }
         #else
-        if(millis() - timer > 30000)
+        if(millis() - timer > 2000)
         {
             timer = millis();
             count++;
             if(count & 0x01)
             {
-                gPTPCmd.x += 100;
+                gPTPCmd.x += 10;
                 SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
             }
             else
             {
-                gPTPCmd.x -= 100;
+                gPTPCmd.x -= 5;
                 SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
             }
         }
