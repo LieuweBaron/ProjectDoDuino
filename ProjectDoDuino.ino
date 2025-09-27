@@ -214,7 +214,7 @@ void loop()
               }
         }
         #else
-        if(millis() - timer > 3000)
+        if(millis() - timer > 30000)
         {
             timer = millis();
             count++;
