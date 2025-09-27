@@ -41,9 +41,9 @@ uint64_t gQueuedCmdIndex;
 *********************************************************************************************************/
 //start position of the dobot, based on cartesian coordinates
 float startX = 200.00;       
-float startY = 0.00;       
+float startY = 100.00;       
 float startZ = 50.00;       
-float startR = 0.00;
+float startR = 100.00;
 //current position of the dobot, updated on chance, based on cartesian coordinates
 float currentX = startX;
 float currentY = startY;
@@ -170,18 +170,20 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 void suctionCupEnable(bool suctionEnable) {
-    if(suctionEnable == true & suctionCurrentlyOn == false) {
+    if(suctionEnable == true) {
         SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
         suctionCurrentlyOn = suctionEnable;
     }
     else {
-        if (suctionEnable == false & suctionCurrentlyOn == true){
+        if (suctionEnable == false){
             SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-            suctionCurrentlyOn = suctionEnable;
+            suctionCurrentlyOn = suctionEnable; 
         }
     }
-    Serial.println("function suctionCupEnable() called");
     ProtocolProcess();
+    Serial.println("function suctionCupEnable() called");
+    delay(10000);
+    
 }
 /*********************************************************************************************************
 ** Function name:       InitRAM
@@ -263,7 +265,14 @@ void loop()
     for(; ;) {
         moveDobotToPos(startX, startY, startZ, startR);
         //Serial.println("looping");
-        delay(1000);
+        if(suctionCurrentlyOn == false) {
+            suctionCupEnable(true);
+        } 
+        else {
+            if(suctionCurrentlyOn == true) {
+                suctionCupEnable(false);
+            }
+        }
     }
 }   
 
