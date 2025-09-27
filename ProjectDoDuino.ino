@@ -40,7 +40,7 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 //start position of the dobot, based on cartesian coordinates
-float startX = 0.00;       
+float startX = 200.00;       
 float startY = 0.00;       
 float startZ = 50.00;       
 float startR = 0.00;
@@ -134,6 +134,8 @@ void moveDobotToPos(float x, float y, float z, float r) {
     currentR = r;
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess();
+    Serial.println("function moveDobotToPos() called");
+    Serial.print("move to x:"); Serial.print(gPTPCmd.x); Serial.print(" y:"); Serial.print(gPTPCmd.y); Serial.print(" z:"); Serial.println(gPTPCmd.r);
     delay(500);
 }
 /*********************************************************************************************************
@@ -155,6 +157,8 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
     currentR += r;
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess();
+    Serial.println("function moveDobotByIncrement() called");
+    Serial.print("move to x:"); Serial.print(gPTPCmd.x); Serial.print(" y:"); Serial.print(gPTPCmd.y); Serial.print(" z:"); Serial.println(gPTPCmd.r);
     delay(500);
 }
 /*********************************************************************************************************
@@ -176,6 +180,7 @@ void suctionCupEnable(bool suctionEnable) {
             suctionCurrentlyOn = suctionEnable;
         }
     }
+    Serial.println("function suctionCupEnable() called");
     ProtocolProcess();
 }
 /*********************************************************************************************************
@@ -256,6 +261,7 @@ void loop()
     ProtocolProcess(); 
     // start infinite loop
     for(; ;) {
+        moveDobotToPos(startX, startY, startZ, startR);
         //Serial.println("looping");
         delay(1000);
     }
