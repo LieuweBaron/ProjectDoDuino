@@ -43,11 +43,27 @@ PTPCmd          gPTPCmd;
 uint64_t gQueuedCmdIndex;
 
 /*********************************************************************************************************
+** Global variables // made by lieuwe
+*********************************************************************************************************/
+//start position of the dobot, based on cartesian coordinates
+float startX = 200.00;       
+float startY = 0.00;       
+float startZ = 0.00;       
+float startR = 0.00;
+//current position of the dobot, updated on chance, based on cartesian coordinates
+float currentX = startX;
+float currentY = startY;
+float currentZ = startZ;
+float currentR = startR;
+//if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
+bool suctionCup = false;
+/*********************************************************************************************************
 ** Function name:       setup
 ** Descriptions:        Initializes Serial
 ** Input parameters:    none
 ** Output parameters:   none
 ** Returned value:      none
+** Developer:           Dobot Labs
 *********************************************************************************************************/
 void setup() {
     Serial.begin(115200);
@@ -63,7 +79,8 @@ void setup() {
 ** Descriptions:        import data to rxbuffer
 ** Input parametersnone:
 ** Output parameters:   
-** Returned value:      
+** Returned value:
+** Developer:           Dobot Labs      
 *********************************************************************************************************/
 void Serialread()
 {
@@ -79,7 +96,8 @@ void Serialread()
 ** Descriptions:        Remap Serial to Printf
 ** Input parametersnone:
 ** Output parameters:   
-** Returned value:      
+** Returned value:  
+** Developer:           Dobot Labs    
 *********************************************************************************************************/
 int Serial_putc( char c, struct __file * )
 {
@@ -93,18 +111,61 @@ int Serial_putc( char c, struct __file * )
 ** Input parameters:    
 ** Output parameters:
 ** Returned value:      
+** Developer:           Dobot Labs
 *********************************************************************************************************/
 void printf_begin(void)
 {
     fdevopen( &Serial_putc, 0 );
 }
+/*********************************************************************************************************
+** Function name:       moveDobotToPos
+** Descriptions:        Move the Dobot arm to a set position
+** Input parameters:    float x, float y, float z, float r
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void moveDobotToPos(float x, float y, float z, float r) {
+    gPTPCmd.x = x;
+    gPTPCmd.y = y;
+    gPTPCmd.z = z;
+    gPTPCmd.r = r;
+    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+}
+/*********************************************************************************************************
+** Function name:       moveDobotByIncrement
+** Descriptions:        Move the Dobot arm 
+** Input parameters:    float x, float y, float z, float r
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void moveDobotByIncrement(float x, float y, float z, float r) {
+    gPTPCmd.x = x;
+    gPTPCmd.y = y;
+    gPTPCmd.z = z;
+    gPTPCmd.r = r;
+    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+}
+/*********************************************************************************************************
+** Function name:       InitRAM
+** Descriptions:        Enables/Disables the suction cup of the Dobot arm
+** Input parameters:    bool suctionEnable
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+//function to enable the suction //made by lieuwe
+void suctionCupEnable(bool suctionEnable) {
 
+}
 /*********************************************************************************************************
 ** Function name:       InitRAM
 ** Descriptions:        Initializes a global variable
 ** Input parameters:    none
 ** Output parameters:   none
 ** Returned value:      none
+** Developer:           Dobot Labs/Lieuwe Baron
 *********************************************************************************************************/
 void InitRAM(void)
 {
@@ -144,12 +205,14 @@ void InitRAM(void)
 
     gPTPCommonParams.velocityRatio = 50;
     gPTPCommonParams.accelerationRatio = 50;
-    //sets initial position of the dobot
+    //has to do with the initial position of the dobot
     gPTPCmd.ptpMode = MOVL_XYZ;
-    //gPTPCmd.x = 0;
+    //gPTPCmd.x = 200;
     //gPTPCmd.y = 0;
     //gPTPCmd.z = 0;
     //gPTPCmd.r = 0;
+    //these lines has been added to give the dobot a set starting position
+    moveDobotToPos(startPosX, startPosY, startPosZ, startPosR);
 
     gQueuedCmdIndex = 0;
 
@@ -170,15 +233,15 @@ void loop()
 
     ProtocolInit();
     
-    //SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
+    SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
     
-    //SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
+    SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
-    //SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
+    SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
     
     //printf("\r\n======Enter demo application======\r\n");
     //this code moves to dobot
-    //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     for(; ;)
     {
         static uint32_t timer = millis();
@@ -186,8 +249,8 @@ void loop()
         #ifdef JOG_STICK
         if(millis() - timer > 1000)
         {
-            timer = millis();
-            count++;
+            //timer = millis();
+            //count++;
             //this code does nothing noticable
             /*switch(count){
                 case 1:
