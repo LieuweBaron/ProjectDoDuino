@@ -57,6 +57,7 @@ float currentZ = startZ;
 float currentR = startR;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = false;
+bool suctionCurrentlyOn = false;
 /*********************************************************************************************************
 ** Function name:       setup
 ** Descriptions:        Initializes Serial
@@ -141,10 +142,10 @@ void moveDobotToPos(float x, float y, float z, float r) {
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 void moveDobotByIncrement(float x, float y, float z, float r) {
-    gPTPCmd.x = x;
-    gPTPCmd.y = y;
-    gPTPCmd.z = z;
-    gPTPCmd.r = r;
+    gPTPCmd.x += x;
+    gPTPCmd.y += y;
+    gPTPCmd.z += z;
+    gPTPCmd.r += r;
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
 }
 /*********************************************************************************************************
@@ -157,7 +158,16 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
 *********************************************************************************************************/
 //function to enable the suction //made by lieuwe
 void suctionCupEnable(bool suctionEnable) {
-
+    if(suctionEnable == true & suctionCurrentlyOn == false) {
+        SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+        suctionCurrentlyOn = suctionEnable;
+    }
+    else {
+        if (suctionEnable == false & suctionCurrentlyOn == true){
+            SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+            suctionCurrentlyOn = suctionEnable;
+        }
+    }
 }
 /*********************************************************************************************************
 ** Function name:       InitRAM
@@ -212,7 +222,7 @@ void InitRAM(void)
     //gPTPCmd.z = 0;
     //gPTPCmd.r = 0;
     //these lines has been added to give the dobot a set starting position
-    moveDobotToPos(startPosX, startPosY, startPosZ, startPosR);
+    moveDobotToPos(startX, startY, startZ, startR);
 
     gQueuedCmdIndex = 0;
 
