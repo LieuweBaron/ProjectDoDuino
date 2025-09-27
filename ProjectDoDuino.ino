@@ -1,21 +1,15 @@
-/****************************************Copyright(c)*****************************************************
-**                            Shenzhen Yuejiang Technology Co., LTD.
+/*********************************************************************************************************
+------------------------------------Important Information-------------------------------------------------
+**  ProtocolProcess() is used to have the Dobot execute commands. (23:39 - 27/09/2025)
 **
-**                                 http://www.dobot.cc
 **
-**--------------File Info---------------------------------------------------------------------------------
-** File name:           main.cpp
-** Latest modified Date:2016-10-24
-** Latest Version:      V2.0.0
-** Descriptions:        main body
 **
-**--------------------------------------------------------------------------------------------------------
-** Modify by:           Edward
-** Modified date:       2016-11-25
-** Version:             V1.0.0
-** Descriptions:        Modified,From DobotDemoForSTM32
-**--------------------------------------------------------------------------------------------------------
+**
+**
+**
+----------------------------------------------------------------------------------------------------------
 *********************************************************************************************************/
+
 #include "stdio.h"
 #include "Protocol.h"
 #include "command.h"
@@ -46,9 +40,9 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 //start position of the dobot, based on cartesian coordinates
-float startX = 200.00;       
+float startX = 0.00;       
 float startY = 0.00;       
-float startZ = 0.00;       
+float startZ = 50.00;       
 float startR = 0.00;
 //current position of the dobot, updated on chance, based on cartesian coordinates
 float currentX = startX;
@@ -70,6 +64,9 @@ void setup() {
     Serial.begin(115200);
     Serial1.begin(115200); 
     printf_begin();
+    Serial.println(" ");
+    Serial.println("===========Serial comminucation established=================");
+    Serial.println(" ");
     //Set Timer Interrupt
     FlexiTimer2::set(100,Serialread); 
     FlexiTimer2::start();
@@ -131,7 +128,13 @@ void moveDobotToPos(float x, float y, float z, float r) {
     gPTPCmd.y = y;
     gPTPCmd.z = z;
     gPTPCmd.r = r;
+    currentX = x;
+    currentY = y;
+    currentZ = z;
+    currentR = r;
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+    ProtocolProcess();
+    delay(500);
 }
 /*********************************************************************************************************
 ** Function name:       moveDobotByIncrement
@@ -146,7 +149,13 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
     gPTPCmd.y += y;
     gPTPCmd.z += z;
     gPTPCmd.r += r;
+    currentX += x;
+    currentY += y;
+    currentZ += z;
+    currentR += r;
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+    ProtocolProcess();
+    delay(500);
 }
 /*********************************************************************************************************
 ** Function name:       InitRAM
@@ -156,7 +165,6 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
 ** Returned value:      none
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-//function to enable the suction //made by lieuwe
 void suctionCupEnable(bool suctionEnable) {
     if(suctionEnable == true & suctionCurrentlyOn == false) {
         SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
@@ -168,6 +176,7 @@ void suctionCupEnable(bool suctionEnable) {
             suctionCurrentlyOn = suctionEnable;
         }
     }
+    ProtocolProcess();
 }
 /*********************************************************************************************************
 ** Function name:       InitRAM
@@ -201,9 +210,8 @@ void InitRAM(void)
     gJOGCommonParams.velocityRatio = 50;
     gJOGCommonParams.accelerationRatio = 50;
    
-    //gJOGCmd.cmd = AP_DOWN;
-
-    //gJOGCmd.isJoint = JOINT_MODEL;
+    gJOGCmd.cmd = AP_DOWN;
+    gJOGCmd.isJoint = JOINT_MODEL;
 
     
 
@@ -215,16 +223,11 @@ void InitRAM(void)
 
     gPTPCommonParams.velocityRatio = 50;
     gPTPCommonParams.accelerationRatio = 50;
-    //has to do with the initial position of the dobot
-    gPTPCmd.ptpMode = MOVL_XYZ;
-    //gPTPCmd.x = 200;
-    //gPTPCmd.y = 0;
-    //gPTPCmd.z = 0;
-    //gPTPCmd.r = 0;
-    //these lines has been added to give the dobot a set starting position
-    moveDobotToPos(startX, startY, startZ, startR);
 
+    gPTPCmd.ptpMode = MOVL_XYZ;
     gQueuedCmdIndex = 0;
+    moveDobotToPos(startX, startY, startZ, startR);
+    ProtocolProcess();
 
     
 }
@@ -248,65 +251,13 @@ void loop()
     SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
     SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-    
-    //printf("\r\n======Enter demo application======\r\n");
-    //this code moves to dobot
-    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-    for(; ;)
-    {
-        static uint32_t timer = millis();
-        static uint32_t count = 0;
-        #ifdef JOG_STICK
-        if(millis() - timer > 1000)
-        {
-            //timer = millis();
-            //count++;
-            //this code does nothing noticable
-            /*switch(count){
-                case 1:
-                    gJOGCmd.cmd = IDEL;//AP_DOWN;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 2:
-                    gJOGCmd.cmd = IDEL;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 3:
-                    gJOGCmd.cmd = IDEL;//AN_DOWN;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 4:
-                    gJOGCmd.cmd = IDEL;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                default:
-                    count = 0;
-                    break;
-              }
-        }*/
-        //this code makes the continious movements
-        #else
-        if(millis() - timer > 2000)
-        {
-            timer = millis();
-            count++;
-            if(count & 0x01)
-            {
-                gPTPCmd.x += 10;
-                SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            }
-            else
-            {
-                gPTPCmd.x -= 5;
-                SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            }
-        }
-        #endif
-        ProtocolProcess();
+
+    //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+    ProtocolProcess(); 
+    // start infinite loop
+    for(; ;) {
+        //Serial.println("looping");
+        delay(1000);
     }
 }   
 
