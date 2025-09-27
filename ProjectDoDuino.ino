@@ -130,8 +130,9 @@ void InitRAM(void)
     gJOGCommonParams.velocityRatio = 50;
     gJOGCommonParams.accelerationRatio = 50;
    
-    gJOGCmd.cmd = AP_DOWN;
-    gJOGCmd.isJoint = JOINT_MODEL;
+    //gJOGCmd.cmd = AP_DOWN;
+
+    //gJOGCmd.isJoint = JOINT_MODEL;
 
     
 
@@ -143,12 +144,12 @@ void InitRAM(void)
 
     gPTPCommonParams.velocityRatio = 50;
     gPTPCommonParams.accelerationRatio = 50;
-
+    //sets initial position of the dobot
     gPTPCmd.ptpMode = MOVL_XYZ;
-    gPTPCmd.x = 200;
-    gPTPCmd.y = 0;
-    gPTPCmd.z = 0;
-    gPTPCmd.r = 0;
+    //gPTPCmd.x = 0;
+    //gPTPCmd.y = 0;
+    //gPTPCmd.z = 0;
+    //gPTPCmd.r = 0;
 
     gQueuedCmdIndex = 0;
 
@@ -169,15 +170,15 @@ void loop()
 
     ProtocolInit();
     
-    SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
+    //SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
     
-    SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
+    //SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
-    SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
+    //SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
     
-    printf("\r\n======Enter demo application======\r\n");
-    
-    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+    //printf("\r\n======Enter demo application======\r\n");
+    //this code moves to dobot
+    //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     for(; ;)
     {
         static uint32_t timer = millis();
@@ -187,9 +188,10 @@ void loop()
         {
             timer = millis();
             count++;
-            switch(count){
+            //this code does nothing noticable
+            /*switch(count){
                 case 1:
-                    gJOGCmd.cmd = AP_DOWN;
+                    gJOGCmd.cmd = IDEL;//AP_DOWN;
                     gJOGCmd.isJoint = JOINT_MODEL;
                     SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
                     break;
@@ -199,7 +201,7 @@ void loop()
                     SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
                     break;
                 case 3:
-                    gJOGCmd.cmd = AN_DOWN;
+                    gJOGCmd.cmd = IDEL;//AN_DOWN;
                     gJOGCmd.isJoint = JOINT_MODEL;
                     SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
                     break;
@@ -212,7 +214,8 @@ void loop()
                     count = 0;
                     break;
               }
-        }
+        }*/
+        //this code makes the continious movements
         #else
         if(millis() - timer > 2000)
         {
