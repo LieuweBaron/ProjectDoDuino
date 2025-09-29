@@ -23,27 +23,29 @@
 /*********************************************************************************************************
 ** Global parameters
 *********************************************************************************************************/
-EndEffectorParams gEndEffectorParams;
+EndEffectorParams   gEndEffectorParams;
 
-JOGJointParams  gJOGJointParams;
+JOGJointParams      gJOGJointParams;
 JOGCoordinateParams gJOGCoordinateParams;
-JOGCommonParams gJOGCommonParams;
-JOGCmd          gJOGCmd;
+JOGCommonParams     gJOGCommonParams;
+JOGCmd              gJOGCmd;
 
 PTPCoordinateParams gPTPCoordinateParams;
-PTPCommonParams gPTPCommonParams;
-PTPCmd          gPTPCmd;
+PTPCommonParams     gPTPCommonParams;
+PTPCommonParams     speed;
+PTPCmd              gPTPCmd;    
 
 uint64_t gQueuedCmdIndex;
 
 /*********************************************************************************************************
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
+Pose robotPose;
 //start position of the dobot, based on cartesian coordinates
-float startX = 200.00;       
+float startX = 0.00;       
 float startY = 100.00;       
-float startZ = 50.00;       
-float startR = 100.00;
+float startZ = 0.00;       
+float startR = 0.00;
 //current position of the dobot, updated on chance, based on cartesian coordinates
 float currentX = startX;
 float currentY = startY;
@@ -132,6 +134,7 @@ void moveDobotToPos(float x, float y, float z, float r) {
     currentY = y;
     currentZ = z;
     currentR = r;
+    Serial.print(gPTPCmd.x);
     SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess();
     Serial.println("function moveDobotToPos() called");
@@ -162,7 +165,29 @@ void moveDobotByIncrement(float x, float y, float z, float r) {
     delay(500);
 }
 /*********************************************************************************************************
-** Function name:       InitRAM
+** Function name:       saveRoute
+** Descriptions:        saves a user created route
+** Input parameters:    none
+** Output parameters:   savedRoute
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void saveRoute() {
+
+}
+/*********************************************************************************************************
+** Function name:       replayRoute
+** Descriptions:        replays a user created route
+** Input parameters:    route
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void replayRoute() {
+
+}
+/*********************************************************************************************************
+** Function name:       suctionCupEnable
 ** Descriptions:        Enables/Disables the suction cup of the Dobot arm
 ** Input parameters:    bool suctionEnable
 ** Output parameters:   none
@@ -233,7 +258,8 @@ void InitRAM(void)
 
     gPTPCmd.ptpMode = MOVL_XYZ;
     gQueuedCmdIndex = 0;
-    moveDobotToPos(startX, startY, startZ, startR);
+    
+    //moveDobotToPos(startX, startY, startZ, startR);
     ProtocolProcess();
 
     
@@ -258,21 +284,45 @@ void loop()
     SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
     SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-
+    delay(5000);
+    SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+    //SetHomeCmd();
+    //moveDobotToPos(startX, startY, startZ, startR);
     //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess(); 
     // start infinite loop
     for(; ;) {
-        moveDobotToPos(startX, startY, startZ, startR);
-        //Serial.println("looping");
-        if(suctionCurrentlyOn == false) {
-            suctionCupEnable(true);
-        } 
-        else {
-            if(suctionCurrentlyOn == true) {
-                suctionCupEnable(false);
-            }
-        }
+         //static uint32_t num = 0;
+        //if(num % 2 == 0) {
+            //gPTPCmd.x += 100;
+            //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        //} else {
+            //gPTPCmd.x -= 100;
+            //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        //}
+        //GetPose(&robotPose);
+        //Serial.println("----POSE----");
+        //Serial.println(robotPose.x);
+        //Serial.println(robotPose.y);
+        //Serial.println(robotPose.z);
+        //Serial.println(robotPose.r);
+        //Serial.println("---END-POSE---");
+        delay(10);
+        ClearAllAlarmsState(true);
+        
+        //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        //moveDobotByIncrement(1.00,0.00,0.00,0.00);
+        //x = robotPose.x;				// x, y, z and r variables will have to be defined somewhere in your program
+        //y = robotPose.y;				// Again these can be whatever name you choose. The x, y,  z and r after robotPose
+        //z = robotPose.z;				// have to be that as it's what they're defined as in the struct we're using.
+        //r = robotPose.r;				// axis0 - axis3 are also whatever variable you choose them to be. I don't bother
+        //moveDobotToPos(startX, startY, startZ, startR);
+        //Serial.println();
+        //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+        //suctionCupEnable(true);
+        //suctionCupEnable(false);
+        //delay(1000);
+        ProtocolProcess();
     }
 }   
 

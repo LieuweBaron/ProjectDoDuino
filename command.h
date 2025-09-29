@@ -111,11 +111,28 @@ uint8_t ptpMode;
     float r;
 }PTPCmd;
 
+typedef struct tagPose {
+float x; //Robotic arm coordinate system x
+float y; //Robotic arm .
+float z; //Robotic arm coordinate system z
+float r; //Robotic arm coordinate system r
+float jointAngle[4]; //Robotic arm 4 axis(The basement, rear arm, forearm,EndEffector) angles
+} Pose;
+
+typedef struct tagHOMECmd {
+uint32_t reserved; // Reserved for future use
+} HOMECmd;
+
 #pragma pack(pop)
 
 
 
-
+/*********************************************************************************************************
+** Pose
+*********************************************************************************************************/
+extern int GetPose(Pose *pose);
+extern int SetHomeCmd();
+extern int ClearAllAlarmsState(bool isQueued);
 /*********************************************************************************************************
 ** End effector function
 *********************************************************************************************************/

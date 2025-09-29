@@ -23,6 +23,7 @@
 #include "Protocol.h"
 #include "ProtocolID.h"
 
+static uint32_t gParamsPointer = 0;
 /*********************************************************************************************************
 ** Function name:       SetEndEffectorParams
 ** Descriptions:        Set end effector parameters
@@ -90,6 +91,7 @@ int SetEndEffectorSuctionCup(bool suck, bool isQueued, uint64_t *queuedCmdIndex)
 
     return true;
 }
+
 
 /*********************************************************************************************************
 ** Function name:       SetEndEffectorGripper
@@ -297,6 +299,48 @@ int SetPTPCommonParams(PTPCommonParams *ptpCommonParams, bool isQueued, uint64_t
     return true;
 }
 
+int GetPose(Pose *pose)
+{
+    Message tempMessage;
+    tempMessage.id = ProtocolGetPose;
+    tempMessage.rw = false;
+    tempMessage.isQueued = false;
+    tempMessage.paramsLen = 0;
+
+    memcpy(pose, (void *)gParamsPointer, sizeof(Pose));
+    MessageWrite(&gSerialProtocolHandler, &tempMessage);
+
+    return true;
+}
+
+int SetHomeCmd()
+{
+    Message tempMessage;
+    tempMessage.id = ProtocolHOMECmd;
+    tempMessage.rw = true;
+    tempMessage.isQueued = true;
+    tempMessage.paramsLen = 0;
+
+    memcpy(&gSerialProtocolHandler, (void *)gParamsPointer, sizeof(uint64_t));
+    MessageWrite(&gSerialProtocolHandler, &tempMessage);
+
+    return true;
+}
+
+int ClearAllAlarmsState(bool isQueued) {
+    Message tempMessage;
+
+    memset(&tempMessage, 0, sizeof(Message));
+    tempMessage.id = ProtocolAlarmsState;
+    tempMessage.rw = true;
+    tempMessage.isQueued = isQueued;
+    tempMessage.paramsLen = 2;//sizeof(AlarmsState);
+    memcpy(tempMessage.params, tempMessage.paramsLen);
+
+    MessageWrite(&gSerialProtocolHandler, &tempMessage);
+
+    return true;
+}
 /*********************************************************************************************************
 ** Function name:       SetPTPCmd
 ** Descriptions:        Execute the position function
