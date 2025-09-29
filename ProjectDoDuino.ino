@@ -43,7 +43,7 @@ uint64_t gQueuedCmdIndex;
 Pose robotPose;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
-float startY = 100.00;       
+float startY = -200.00;       
 float startZ = 0.00;       
 float startR = 0.00;
 //current position of the dobot, updated on chance, based on cartesian coordinates
@@ -287,7 +287,7 @@ void loop()
     delay(5000);
     SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
     //SetHomeCmd();
-    //moveDobotToPos(startX, startY, startZ, startR);
+    moveDobotToPos(startX, startY, startZ, startR);
     //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess(); 
     // start infinite loop
@@ -300,17 +300,17 @@ void loop()
             //gPTPCmd.x -= 100;
             //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         //}
-        //GetPose(&robotPose);
-        //Serial.println("----POSE----");
-        //Serial.println(robotPose.x);
-        //Serial.println(robotPose.y);
-        //Serial.println(robotPose.z);
-        //Serial.println(robotPose.r);
-        //Serial.println("---END-POSE---");
-        delay(10);
-        ClearAllAlarmsState(true);
-        
-        //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        GetPose(&robotPose);
+        Serial.println("----POSE----");
+        Serial.println(robotPose.x);
+        Serial.println(robotPose.y);
+        Serial.println(robotPose.z);
+        Serial.println(robotPose.r);
+        Serial.println("---END-POSE---");
+        delay(1000);
+        //ClearAllAlarmsState(true);
+        SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         //moveDobotByIncrement(1.00,0.00,0.00,0.00);
         //x = robotPose.x;				// x, y, z and r variables will have to be defined somewhere in your program
         //y = robotPose.y;				// Again these can be whatever name you choose. The x, y,  z and r after robotPose

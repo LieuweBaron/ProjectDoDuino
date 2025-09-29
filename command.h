@@ -132,7 +132,7 @@ uint32_t reserved; // Reserved for future use
 *********************************************************************************************************/
 extern int GetPose(Pose *pose);
 extern int SetHomeCmd();
-extern int ClearAllAlarmsState(bool isQueued);
+//extern int ClearAllAlarmsState(bool isQueued);
 /*********************************************************************************************************
 ** End effector function
 *********************************************************************************************************/

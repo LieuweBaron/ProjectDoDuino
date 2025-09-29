@@ -327,7 +327,7 @@ int SetHomeCmd()
     return true;
 }
 
-int ClearAllAlarmsState(bool isQueued) {
+/*int ClearAllAlarmsState(bool isQueued) {
     Message tempMessage;
 
     memset(&tempMessage, 0, sizeof(Message));
@@ -340,7 +340,7 @@ int ClearAllAlarmsState(bool isQueued) {
     MessageWrite(&gSerialProtocolHandler, &tempMessage);
 
     return true;
-}
+}*/
 /*********************************************************************************************************
 ** Function name:       SetPTPCmd
 ** Descriptions:        Execute the position function
