@@ -41,8 +41,10 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 Pose robotPose;
-int cmdQueue[1] = {0}; 
+//queue variables
 int queueSize = 5;
+int queue[5] = {23,54,67,27,98};
+int* queuePTR = queue;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -69,7 +71,7 @@ void setup() {
     Serial1.begin(115200); 
     printf_begin();
     Serial.println(" ");
-    Serial.println("===========Serial comminucation established=================");
+    Serial.println("===========Serial communication established=================");
     Serial.println(" ");
     //Set Timer Interrupt
     FlexiTimer2::set(100,Serialread); 
@@ -124,24 +126,28 @@ void printf_begin(void)
 ** Descriptions:        expand the queue of dobot commands
 ** Input parameters:    int queuedItem, int size, int* oldQueuePTR
 ** Output parameters:   none
-** Returned value:      newQueuePTR
+** Returned value:      int* newQueuePTR
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-int expandQueue(int queuedItem, int* oldQueuePTR) {
-    queueSize += 1;
+int expandQueue(int queuedItem) {
+    //queueSize += 1;
     int newQueue[queueSize] = {0};
-    int* newQueuePTR = newQueue;
-    newQueue[0] = queuedItem;
+    //newQueue[0] = queuedItem;
     //move over the items in the old queue to the new queue
     for(int i = 0; i < queueSize; i++) {
-        newQueue[i+1] = *(oldQueuePTR + i);
+        newQueue[i] = *(queuePTR + i);
+        //newQueue[i+1] = *(oldQueuePTR + i);
     }
+    int* newQueuePTR = newQueue;
     //deallocate memory of the old queue using the pointer of the old queue
     for(int i = queueSize; i > 0; i--) {
-        delete (oldQueuePTR + i);
+        delete (queuePTR + i);
     }
-    //return pointer to the new queue
-    return newQueuePTR;
+    for(int i = 0; i < queueSize; i++) {
+        Serial.println(*(newQueuePTR + i));
+    }
+    //chance the old queuePTR into the new one
+    queuePTR = newQueuePTR;
 }
 /*********************************************************************************************************
 ** Function name:       shrinkQueue
@@ -325,14 +331,20 @@ void loop()
     //moveDobotToPos(startX, startY, startZ, startR);
     ProtocolProcess(); 
     // start infinite loop
-    
-    int firstInQueue = cmdQueue[0];
+
     for(; ;) {
-        int queue[queueSize] = {198,2078,365,434,52};
-        int* queuePTR = queue;
-        //Serial.println(*queuePTR);
-        expandQueue(7, queuePTR);
-        switch(firstInQueue) {
+        Serial.println("===========================");
+        //int firstInQueue = cmdQueue[0];
+        
+        queuePTR = expandQueue(queueSize);
+        delay(50);
+        Serial.println("--------new-pointer--------");
+        delay(50);
+            for(int i = 0; i < queueSize; i++) {
+        Serial.println(*(queuePTR + i));
+    }
+        Serial.println("===========================");
+        /*switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
                 break;
@@ -366,7 +378,7 @@ void loop()
             case 10:
                 Serial.println("EMPTY");
                 break;
-        }
+        }*/
         delay(1000);
         //ClearAllAlarmsState(true);
         //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
