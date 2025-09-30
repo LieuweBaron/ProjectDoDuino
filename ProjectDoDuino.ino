@@ -336,13 +336,13 @@ void loop()
         Serial.println("===========================");
         //int firstInQueue = cmdQueue[0];
         
-        queuePTR = expandQueue(queueSize);
+        expandQueue(queueSize);
         delay(50);
         Serial.println("--------new-pointer--------");
         delay(50);
-            for(int i = 0; i < queueSize; i++) {
-        Serial.println(*(queuePTR + i));
-    }
+        for(int i = 0; i < queueSize; i++) {
+            Serial.println(*(queuePTR + i));
+        }
         Serial.println("===========================");
         /*switch(firstInQueue) {
             case 0:
