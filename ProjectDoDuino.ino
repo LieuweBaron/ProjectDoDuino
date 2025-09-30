@@ -42,6 +42,7 @@ uint64_t gQueuedCmdIndex;
 *********************************************************************************************************/
 Pose robotPose;
 int cmdQueue[1] = {0}; 
+int queueSize = 1;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -121,47 +122,38 @@ void printf_begin(void)
 /*********************************************************************************************************
 ** Function name:       expandQueue
 ** Descriptions:        expand the queue of dobot commands
-** Input parameters:    int queuedItem
-** Output parameters:   newQueue[]
-** Returned value:      none
+** Input parameters:    int queuedItem, int size, int* oldQueuePTR
+** Output parameters:   none
+** Returned value:      newQueuePTR
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-int expandQueue(int queuedItem, int size, int* oldQueuePTR) {
-    //int* newQueue;
-    //int size = sizeof(oldQueuePTR);
-    for(int k = 0; k < size; k++) {
-        Serial.println(*(oldQueuePTR + k));
+int expandQueue(int queuedItem, int queueSize, int* oldQueuePTR) {
+    queueSize += 1;
+    Serial.println("----size----");
+    Serial.println(queueSize);
+    Serial.println("--end-size--");
+    int newQueue[queueSize] = {0};
+    int* newQueuePTR = newQueue;
+    newQueue[0] = queuedItem;
+    for(int i = 0; i < queueSize; i++) {
+        newQueue[i+1] = *(oldQueuePTR + i);
     }
-    Serial.println(size);
-    //newQueue = new int[size];
-
-    //for (int k=0; k<size; k++)
-        //newQueue[k] = ;
-
-    //for (int k=0; k<size; k++)
-        //Serial.println(newQueue[k]);
-
+        for(int i = 0; i < queueSize; i++) {
+        Serial.println(newQueue[i]);
+    }
     //delete[] newQueue;
 
     return 0;
 }
+/*********************************************************************************************************
+** Function name:       shrinkQueue
+** Descriptions:        remove the first item in the queue of dobot commands
+** Input parameters:    pointer 
+** Output parameters:   newQueue[]
+** Returned value:      int* queuePNT, int size
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
 
-/*void expandQueue(int queuedItem, int oldQueue[]) {
-    int i = 1;
-    int size = sizeof(oldQueue);//sizeof(oldQueue) / sizeof(oldQueue[0]);
-    //int sizeCast = static_cast<int>(size);
-    Serial.println("size");
-    Serial.println(size);
-    int newQueue[size + 1] = {}; 
-    newQueue[0] = queuedItem;
-    for(; i == size; i++) {
-        newQueue[i] = oldQueue[i];
-    }
-    int o = 0;
-    for (int o = size - 1; o >= 0; o--) {
-        Serial.println(newQueue[i]);
-    }
-}*/
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
