@@ -259,7 +259,6 @@ void InitRAM(void)
     gPTPCmd.ptpMode = MOVL_XYZ;
     gQueuedCmdIndex = 0;
     
-    //moveDobotToPos(startX, startY, startZ, startR);
     ProtocolProcess();
 
     
@@ -284,44 +283,53 @@ void loop()
     SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
     SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
+    //delay to give the dobot time to start up
     delay(5000);
-    SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-    //SetHomeCmd();
+    //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
     moveDobotToPos(startX, startY, startZ, startR);
-    //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
     ProtocolProcess(); 
     // start infinite loop
+    int firstInQueue = cmdQueue[0];
     for(; ;) {
-         //static uint32_t num = 0;
-        //if(num % 2 == 0) {
-            //gPTPCmd.x += 100;
-            //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        //} else {
-            //gPTPCmd.x -= 100;
-            //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        //}
-        GetPose(&robotPose);
-        Serial.println("----POSE----");
-        Serial.println(robotPose.x);
-        Serial.println(robotPose.y);
-        Serial.println(robotPose.z);
-        Serial.println(robotPose.r);
-        Serial.println("---END-POSE---");
-        delay(1000);
+        switch(firstInQueue) {
+            case 0:
+                Serial.println("EMPTY");
+                break;
+            case 1:
+                Serial.println("EMPTY");
+                break;
+            case 2:
+                Serial.println("EMPTY");
+                break;
+            case 3:
+                Serial.println("EMPTY");
+                break;
+            case 4:
+                Serial.println("EMPTY");
+                break;
+            case 5:
+                Serial.println("EMPTY");
+                break;
+            case 6:
+                Serial.println("EMPTY");
+                break;
+            case 7:
+                Serial.println("EMPTY");
+                break;
+            case 8:
+                Serial.println("EMPTY");
+                break;
+            case 9:
+                Serial.println("EMPTY");
+                break;
+            case 10:
+                Serial.println("EMPTY");
+                break;
+        }
+        delay(10);
         //ClearAllAlarmsState(true);
-        SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        //moveDobotByIncrement(1.00,0.00,0.00,0.00);
-        //x = robotPose.x;				// x, y, z and r variables will have to be defined somewhere in your program
-        //y = robotPose.y;				// Again these can be whatever name you choose. The x, y,  z and r after robotPose
-        //z = robotPose.z;				// have to be that as it's what they're defined as in the struct we're using.
-        //r = robotPose.r;				// axis0 - axis3 are also whatever variable you choose them to be. I don't bother
-        //moveDobotToPos(startX, startY, startZ, startR);
-        //Serial.println();
         //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-        //suctionCupEnable(true);
-        //suctionCupEnable(false);
-        //delay(1000);
+        //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         ProtocolProcess();
     }
 }   
