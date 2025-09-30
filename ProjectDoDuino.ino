@@ -42,7 +42,7 @@ uint64_t gQueuedCmdIndex;
 *********************************************************************************************************/
 Pose robotPose;
 int cmdQueue[1] = {0}; 
-int queueSize = 1;
+int queueSize = 5;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -127,23 +127,21 @@ void printf_begin(void)
 ** Returned value:      newQueuePTR
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-int expandQueue(int queuedItem, int queueSize, int* oldQueuePTR) {
+int expandQueue(int queuedItem, int* oldQueuePTR) {
     queueSize += 1;
-    Serial.println("----size----");
-    Serial.println(queueSize);
-    Serial.println("--end-size--");
     int newQueue[queueSize] = {0};
     int* newQueuePTR = newQueue;
     newQueue[0] = queuedItem;
+    //move over the items in the old queue to the new queue
     for(int i = 0; i < queueSize; i++) {
         newQueue[i+1] = *(oldQueuePTR + i);
     }
-        for(int i = 0; i < queueSize; i++) {
-        Serial.println(newQueue[i]);
+    //deallocate memory of the old queue using the pointer of the old queue
+    for(int i = queueSize; i > 0; i--) {
+        delete (oldQueuePTR + i);
     }
-    //delete[] newQueue;
-
-    return 0;
+    //return pointer to the new queue
+    return newQueuePTR;
 }
 /*********************************************************************************************************
 ** Function name:       shrinkQueue
@@ -330,11 +328,10 @@ void loop()
     
     int firstInQueue = cmdQueue[0];
     for(; ;) {
-        int queue[5] = {198,2078,365,434,52};
-        int queueSize = sizeof(queue) / sizeof(queue[0]);
+        int queue[queueSize] = {198,2078,365,434,52};
         int* queuePTR = queue;
         //Serial.println(*queuePTR);
-        expandQueue(7, queueSize, queuePTR);
+        expandQueue(7, queuePTR);
         switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
