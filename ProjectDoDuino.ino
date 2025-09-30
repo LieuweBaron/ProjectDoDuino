@@ -41,6 +41,7 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 Pose robotPose;
+int cmdQueue[1] = {0}; 
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -118,6 +119,50 @@ void printf_begin(void)
     fdevopen( &Serial_putc, 0 );
 }
 /*********************************************************************************************************
+** Function name:       expandQueue
+** Descriptions:        expand the queue of dobot commands
+** Input parameters:    int queuedItem
+** Output parameters:   newQueue[]
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+int expandQueue(int queuedItem, int size, int* oldQueuePTR) {
+    //int* newQueue;
+    //int size = sizeof(oldQueuePTR);
+    for(int k = 0; k < size; k++) {
+        Serial.println(*(oldQueuePTR + k));
+    }
+    Serial.println(size);
+    //newQueue = new int[size];
+
+    //for (int k=0; k<size; k++)
+        //newQueue[k] = ;
+
+    //for (int k=0; k<size; k++)
+        //Serial.println(newQueue[k]);
+
+    //delete[] newQueue;
+
+    return 0;
+}
+
+/*void expandQueue(int queuedItem, int oldQueue[]) {
+    int i = 1;
+    int size = sizeof(oldQueue);//sizeof(oldQueue) / sizeof(oldQueue[0]);
+    //int sizeCast = static_cast<int>(size);
+    Serial.println("size");
+    Serial.println(size);
+    int newQueue[size + 1] = {}; 
+    newQueue[0] = queuedItem;
+    for(; i == size; i++) {
+        newQueue[i] = oldQueue[i];
+    }
+    int o = 0;
+    for (int o = size - 1; o >= 0; o--) {
+        Serial.println(newQueue[i]);
+    }
+}*/
+/*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
 ** Input parameters:    float x, float y, float z, float r
@@ -125,6 +170,7 @@ void printf_begin(void)
 ** Returned value:      none
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
+
 void moveDobotToPos(float x, float y, float z, float r) {
     gPTPCmd.x = x;
     gPTPCmd.y = y;
@@ -286,11 +332,17 @@ void loop()
     //delay to give the dobot time to start up
     delay(5000);
     //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-    moveDobotToPos(startX, startY, startZ, startR);
+    //moveDobotToPos(startX, startY, startZ, startR);
     ProtocolProcess(); 
     // start infinite loop
+    
     int firstInQueue = cmdQueue[0];
     for(; ;) {
+        int queue[5] = {198,2078,365,434,52};
+        int queueSize = sizeof(queue) / sizeof(queue[0]);
+        int* queuePTR = queue;
+        //Serial.println(*queuePTR);
+        expandQueue(7, queueSize, queuePTR);
         switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
@@ -326,7 +378,7 @@ void loop()
                 Serial.println("EMPTY");
                 break;
         }
-        delay(10);
+        delay(1000);
         //ClearAllAlarmsState(true);
         //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
         //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
