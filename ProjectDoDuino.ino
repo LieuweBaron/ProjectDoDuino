@@ -212,7 +212,6 @@ class dynamicQueue {
                 node* secondItem = head->next;
                 return secondItem->data;
             }
-            return 3505;
         }
 
         void printDynamicQueue() {
