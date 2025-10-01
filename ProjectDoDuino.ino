@@ -191,11 +191,12 @@ class dynamicQueue {
 
         void shrinkDynamicQueue() {
             node* lastTraversed = head;
-            for (int i = 1; i < 1 && lastTraversed != NULL; i++) {
+
+            for (int i = 1; i < 1 && lastTraversed != NULL && lastTraversed->data != 9999; i++) {
                 lastTraversed = lastTraversed->next;
             }
             node* temp = lastTraversed->next;
-            lastTraversed->next = temp->next;
+            lastTraversed->next = temp->next; 
             delete temp;
 
             return head;
@@ -209,8 +210,8 @@ class dynamicQueue {
             Serial.println("Printing the Dynamic Queue");
             while (lastTraversed != NULL) {
                 count++;
-                lastTraversed = lastTraversed->next;
                 Serial.print("item #"); Serial.print(count); Serial.print(" ");Serial.println(lastTraversed->data);
+                lastTraversed = lastTraversed->next;
             }
             Serial.println("=================================");
         }
@@ -397,7 +398,6 @@ void loop()  {
     dQueue.expandDynamicQueue(276);
     dQueue.expandDynamicQueue(11297);
     dQueue.printDynamicQueue();
-    dQueue.shrinkDynamicQueue();
     dQueue.shrinkDynamicQueue();
     dQueue.printDynamicQueue();
     for(; ;) {
