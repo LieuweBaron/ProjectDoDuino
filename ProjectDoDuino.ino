@@ -187,25 +187,25 @@ class dynamicQueue {
 
         void shrinkDynamicQueue() {
             node* lastTraversed = head;
-
-            for (int i = 1; i < 1 && lastTraversed != NULL && lastTraversed->data != 9999; i++) {
-                lastTraversed = lastTraversed->next;
+            //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
+            if(head->next == NULL) {
+            } 
+            else {
+                node* secondItem = head->next;
+                lastTraversed->next = secondItem->next;
+                delete secondItem;
             }
-            node* temp = lastTraversed->next;
-            lastTraversed->next = temp->next; 
-            delete temp;
-
-            return head;
         }
 
-        void getNextInQueue() {
-            node* lastTraversed = head;
-
-            for (int i = 1; i < 1 && lastTraversed != NULL && lastTraversed->data != 9999; i++) {
-                lastTraversed = lastTraversed->next;
+        int getNextInQueue() {
+            //if head is the last item in the queue return its value, if it is not return the value of the second item in the queue
+            if(head->next == NULL) {
+                return head->data;
+            } else {
+                node* secondItem = head->next;
+                return secondItem->data;
             }
-            node* nextInQueue = lastTraversed->next;
-            Serial.println(nextInQueue->data);
+            return 3505;
         }
 
         void printDynamicQueue() {
@@ -396,12 +396,10 @@ void loop()  {
     //moveDobotToPos(startX, startY, startZ, startR);
     //ProtocolProcess(); 
     // start infinite loop
-    //test the dynamic queue2
-    //dQueue.expandDynamicQueue(rand());
-    for(; ;) {
-        //dQueue.expandDynamicQueue(rand());
-        //dQueue.getNextInQueue();
-        //int firstInQueue = 9808;
+    int test = dQueue.getNextInQueue();
+    Serial.print(test); Serial.println("::test");
+
+    for(; ;) { 
         /*switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
@@ -437,7 +435,7 @@ void loop()  {
                 Serial.println("EMPTY");
                 break;
         }*/
-        Serial.println("Loop ended");
+        //Serial.println("Loop ended");
         delay(1000);
     }
 }
