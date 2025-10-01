@@ -130,15 +130,15 @@ void printf_begin(void)
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 class node {
-  public:
-    int data;
-    node *next;
+    public:
+        int data;
+        node *next;
 
-    // constructor for node
-    node(int data) {
-        this->data = data;
-        this->next = NULL;
-    }
+        // constructor for node
+        node(int data) {
+            this->data = data;
+            this->next = NULL;
+        }
 };
 /*********************************************************************************************************
 ** Class name:          dynamicQueue
@@ -170,11 +170,11 @@ class node {
 class dynamicQueue {
     node *head;
 
-  public:
+    public:
     //constructor for dynamicQueue
-    dynamicQueue() {
-        head = new node(9999);
-    }
+        dynamicQueue() {
+            head = new node(9999);
+        }
 
         void expandDynamicQueue(int data) {
             // Create the new Node
