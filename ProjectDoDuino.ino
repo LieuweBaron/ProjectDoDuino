@@ -77,7 +77,7 @@ void setup() {
 /*********************************************************************************************************
 ** Function name:       Serialread
 ** Descriptions:        import data to rxbuffer
-** Input parametersnone:
+** Input parameters     none:
 ** Output parameters:   
 ** Returned value:
 ** Developer:           Dobot Labs      
