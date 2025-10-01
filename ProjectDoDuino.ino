@@ -41,10 +41,6 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 Pose robotPose;
-//queue variables
-int queueSize = 5;
-int queue[5] = {23,54,67,27,98};
-int* queuePTR = queue;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -200,6 +196,16 @@ class dynamicQueue {
             delete temp;
 
             return head;
+        }
+
+        void getNextInQueue() {
+            node* lastTraversed = head;
+
+            for (int i = 1; i < 1 && lastTraversed != NULL && lastTraversed->data != 9999; i++) {
+                lastTraversed = lastTraversed->next;
+            }
+            node* nextInQueue = lastTraversed->next;
+            Serial.println(nextInQueue->data);
         }
 
         void printDynamicQueue() {
@@ -361,7 +367,6 @@ void InitRAM(void)
     gQueuedCmdIndex = 0;
     
     ProtocolProcess();
-
     
 }
 
@@ -374,6 +379,8 @@ void InitRAM(void)
 *********************************************************************************************************/
 
 void loop()  {
+    dynamicQueue dQueue;
+    Serial.println("initialize loop");
     //InitRAM();
 
     //ProtocolInit();
@@ -389,18 +396,12 @@ void loop()  {
     //moveDobotToPos(startX, startY, startZ, startR);
     //ProtocolProcess(); 
     // start infinite loop
-    //test the dynamic queue
-    dynamicQueue dQueue;
-
-    // Inserting nodes
-    dQueue.expandDynamicQueue(23);
-    dQueue.expandDynamicQueue(3094);
-    dQueue.expandDynamicQueue(276);
-    dQueue.expandDynamicQueue(11297);
-    dQueue.printDynamicQueue();
-    dQueue.shrinkDynamicQueue();
-    dQueue.printDynamicQueue();
+    //test the dynamic queue2
+    //dQueue.expandDynamicQueue(rand());
     for(; ;) {
+        //dQueue.expandDynamicQueue(rand());
+        //dQueue.getNextInQueue();
+        //int firstInQueue = 9808;
         /*switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
@@ -436,6 +437,7 @@ void loop()  {
                 Serial.println("EMPTY");
                 break;
         }*/
+        Serial.println("Loop ended");
         delay(1000);
     }
 }
