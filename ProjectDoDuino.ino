@@ -155,6 +155,13 @@ class node {
 **                            Returned value:       node* head       
 ** 
 **                      Function 3:
+**                           Function name:         getNextInQueue
+**                            Descriptions:         gets the value second item in the queue if there is a second item, if not then returns the value of the head
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       int nextInQueueValue
+
+**                      Function 4:
 **                           Function name:         printDynamicQueue
 **                            Descriptions:         prints the dynamic queue
 **                            Input parameters:     none
@@ -372,10 +379,11 @@ void InitRAM(void)
 
 /*********************************************************************************************************
 ** Function name:       loop
-** Descriptions:        Program entry
+** Descriptions:        loops routine of the dobot
 ** Input parameters:    none
 ** Output parameters:   none
 ** Returned value:      none
+** Developer            Lieuwe Baron
 *********************************************************************************************************/
 
 void loop()  {
@@ -396,11 +404,14 @@ void loop()  {
     //moveDobotToPos(startX, startY, startZ, startR);
     //ProtocolProcess(); 
     // start infinite loop
-    int test = dQueue.getNextInQueue();
-    Serial.print(test); Serial.println("::test");
 
     for(; ;) { 
-        /*switch(firstInQueue) {
+        int firstInQueue = dQueue.getNextInQueue();
+
+        switch(firstInQueue) {
+            //9999: dynamic queue is empty, break for new loop
+            case 9999:
+                break;
             case 0:
                 Serial.println("EMPTY");
                 break;
@@ -434,7 +445,7 @@ void loop()  {
             case 10:
                 Serial.println("EMPTY");
                 break;
-        }*/
+        }
         //Serial.println("Loop ended");
         delay(1000);
     }
