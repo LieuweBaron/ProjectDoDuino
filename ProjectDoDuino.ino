@@ -122,14 +122,73 @@ void printf_begin(void)
     fdevopen( &Serial_putc, 0 );
 }
 /*********************************************************************************************************
+** Class name:          node
+** Descriptions:        Node for the dynamic queue (linkedlist)
+** Input parameters:    
+** Output parameters:
+** Returned value:      
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+class node {
+    int data;
+    node* nextNodePTR;
+
+    public:
+    //constructor for the node
+        Node(int data) {
+            this->data = data;
+            this->next = NULL;
+        }
+}
+/*********************************************************************************************************
+** Class name:          dynamicQueue
+** Descriptions:        Queue that can expand and contract, just a linkedlist with a fancy name
+** Functions            
+** 
+**       
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+class dynamicQueue {
+    node *head;
+
+    public:
+        //constructor for the dynamic queue
+        Linkedlist() {
+            node *headNode = new Node(9999);
+            head = headNode;
+        }   
+        
+        void expandDynamicQueue(node* head, int data) {
+            // Create the new Node
+            node *newNode = new Node(data);
+            if (head == NULL) {
+                Serial.println("error, deleted head somehow");
+                return;
+            } else {
+                Node *lastTraversed = head;
+                // Traverse the list
+                while (lastTraversed != NULL) {
+                lastTraversed = lastTraversed->nextNodePTR;
+            }
+            lastTraversed->next = newNode;
+
+            return head;
+        }
+
+        void shrinkDynamicQueue
+}
+/*********************************************************************************************************
 ** Function name:       expandQueue
-** Descriptions:        expand the queue of dobot commands
+** Descriptions:        Expand the queue of dobot commands
 ** Input parameters:    int queuedItem, int size, int* oldQueuePTR
 ** Output parameters:   none
 ** Returned value:      int* newQueuePTR
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-int expandQueue(int queuedItem) {
+//int expandDynamicQueue(int queuedItem) {
+
+}
+/*int expandQueue(int queuedItem) {
     //queueSize += 1;
     int newQueue[queueSize] = {0};
     //newQueue[0] = queuedItem;
@@ -148,16 +207,7 @@ int expandQueue(int queuedItem) {
     }
     //chance the old queuePTR into the new one
     queuePTR = newQueuePTR;
-}
-/*********************************************************************************************************
-** Function name:       shrinkQueue
-** Descriptions:        remove the first item in the queue of dobot commands
-** Input parameters:    pointer 
-** Output parameters:   newQueue[]
-** Returned value:      int* queuePNT, int size
-** Developer:           Lieuwe Baron
-*********************************************************************************************************/
-
+}*/
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
@@ -338,7 +388,7 @@ void loop()
         
         expandQueue(queueSize);
         delay(50);
-        Serial.println("--------new-pointer--------");
+        Serial.println("---------------------------");
         delay(50);
         for(int i = 0; i < queueSize; i++) {
             Serial.println(*(queuePTR + i));
