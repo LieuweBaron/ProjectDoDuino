@@ -407,7 +407,7 @@ void loop()  {
 
     for(; ;) { 
         int firstInQueue = dQueue.getNextInQueue();
-
+        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
         switch(firstInQueue) {
             //9999: dynamic queue is empty, break for new loop
             case 9999:
