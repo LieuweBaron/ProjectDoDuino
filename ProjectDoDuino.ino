@@ -130,84 +130,92 @@ void printf_begin(void)
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 class node {
+  public:
     int data;
-    node* nextNodePTR;
+    node *next;
 
-    public:
-    //constructor for the node
-        Node(int data) {
-            this->data = data;
-            this->next = NULL;
-        }
-}
+    // constructor for node
+    node(int data) {
+        this->data = data;
+        this->next = NULL;
+    }
+};
 /*********************************************************************************************************
 ** Class name:          dynamicQueue
 ** Descriptions:        Queue that can expand and contract, just a linkedlist with a fancy name
-** Functions            
+** Class Functions:
+**                      Function 1:
+**                           Function name:         expandDynamicQueue
+**                            Descriptions:         Expands the dynamic queue
+**                            Input parameters:     int data
+**                            Output parameters:    none
+**                            Returned value:       node* head     
 ** 
+**                      Function 2:
+**                           Function name:         shrinkDynamicQueue
+**                            Descriptions:         Shrinks the dynamic queue
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       node* head       
+** 
+**                      Function 3:
+**                           Function name:         printDynamicQueue
+**                            Descriptions:         prints the dynamic queue
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       none  
 **       
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 class dynamicQueue {
     node *head;
 
-    public:
-        //constructor for the dynamic queue
-        Linkedlist() {
-            node *headNode = new Node(9999);
-            head = headNode;
-        }   
-        
-        void expandDynamicQueue(node* head, int data) {
+  public:
+    //constructor for dynamicQueue
+    dynamicQueue() {
+        head = new node(9999);
+    }
+
+        void expandDynamicQueue(int data) {
             // Create the new Node
-            node *newNode = new Node(data);
-            if (head == NULL) {
-                Serial.println("error, deleted head somehow");
-                return;
-            } else {
-                Node *lastTraversed = head;
-                // Traverse the list
-                while (lastTraversed != NULL) {
-                lastTraversed = lastTraversed->nextNodePTR;
+            node* newNode = new node(data);
+            //saves the node the program was last on
+            node* lastTraversed = head;
+            //traverse the queue
+            while (lastTraversed->next != NULL) {
+                lastTraversed = lastTraversed->next;
             }
+            //add the next node to the back of the queue
             lastTraversed->next = newNode;
+        }
+
+        void shrinkDynamicQueue() {
+            node* lastTraversed = head;
+            for (int i = 1; i < 1 && lastTraversed != NULL; i++) {
+                lastTraversed = lastTraversed->next;
+            }
+            node* temp = lastTraversed->next;
+            lastTraversed->next = temp->next;
+            delete temp;
 
             return head;
         }
 
-        void shrinkDynamicQueue
-}
-/*********************************************************************************************************
-** Function name:       expandQueue
-** Descriptions:        Expand the queue of dobot commands
-** Input parameters:    int queuedItem, int size, int* oldQueuePTR
-** Output parameters:   none
-** Returned value:      int* newQueuePTR
-** Developer:           Lieuwe Baron
-*********************************************************************************************************/
-//int expandDynamicQueue(int queuedItem) {
+        void printDynamicQueue() {
+            int count = 0;
+            node* lastTraversed = head;
+            // Traverse the list
+            Serial.println("=================================");
+            Serial.println("Printing the Dynamic Queue");
+            while (lastTraversed != NULL) {
+                count++;
+                lastTraversed = lastTraversed->next;
+                Serial.print("item #"); Serial.print(count); Serial.print(" ");Serial.println(lastTraversed->data);
+            }
+            Serial.println("=================================");
+        }
+};
 
-}
-/*int expandQueue(int queuedItem) {
-    //queueSize += 1;
-    int newQueue[queueSize] = {0};
-    //newQueue[0] = queuedItem;
-    //move over the items in the old queue to the new queue
-    for(int i = 0; i < queueSize; i++) {
-        newQueue[i] = *(queuePTR + i);
-        //newQueue[i+1] = *(oldQueuePTR + i);
-    }
-    int* newQueuePTR = newQueue;
-    //deallocate memory of the old queue using the pointer of the old queue
-    for(int i = queueSize; i > 0; i--) {
-        delete (queuePTR + i);
-    }
-    for(int i = 0; i < queueSize; i++) {
-        Serial.println(*(newQueuePTR + i));
-    }
-    //chance the old queuePTR into the new one
-    queuePTR = newQueuePTR;
-}*/
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
@@ -364,36 +372,35 @@ void InitRAM(void)
 ** Returned value:      none
 *********************************************************************************************************/
 
-void loop() 
-{
-    InitRAM();
+void loop()  {
+    //InitRAM();
 
-    ProtocolInit();
+    //ProtocolInit();
     
-    SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
+    //SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
     
-    SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
+    //SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
     
-    SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
+    //SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
     //delay to give the dobot time to start up
-    delay(5000);
+    //delay(5000);
     //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
     //moveDobotToPos(startX, startY, startZ, startR);
-    ProtocolProcess(); 
+    //ProtocolProcess(); 
     // start infinite loop
+    //test the dynamic queue
+    dynamicQueue dQueue;
 
+    // Inserting nodes
+    dQueue.expandDynamicQueue(23);
+    dQueue.expandDynamicQueue(3094);
+    dQueue.expandDynamicQueue(276);
+    dQueue.expandDynamicQueue(11297);
+    dQueue.printDynamicQueue();
+    dQueue.shrinkDynamicQueue();
+    dQueue.shrinkDynamicQueue();
+    dQueue.printDynamicQueue();
     for(; ;) {
-        Serial.println("===========================");
-        //int firstInQueue = cmdQueue[0];
-        
-        expandQueue(queueSize);
-        delay(50);
-        Serial.println("---------------------------");
-        delay(50);
-        for(int i = 0; i < queueSize; i++) {
-            Serial.println(*(queuePTR + i));
-        }
-        Serial.println("===========================");
         /*switch(firstInQueue) {
             case 0:
                 Serial.println("EMPTY");
@@ -430,10 +437,6 @@ void loop()
                 break;
         }*/
         delay(1000);
-        //ClearAllAlarmsState(true);
-        //SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-        //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        ProtocolProcess();
     }
-}   
+}
 
