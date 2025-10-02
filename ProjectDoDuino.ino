@@ -141,22 +141,21 @@ class node {
 ** Descriptions:        Queue that can expand and contract, just a linkedlist with a fancy name
 ** Class Functions:
 **                      Function 1:
-**                           Function name:         expandDynamicQueue
-**                            Descriptions:         Expands the dynamic queue
+**                           Function name:         addToQueue
+**                            Descriptions:         adds data to the dynamic queue
 **                            Input parameters:     int data
 **                            Output parameters:    none
-**                            Returned value:       none  
-** 
+**                            Returned value:       none
 **                      Function 2:
-**                           Function name:         shrinkDynamicQueue
-**                            Descriptions:         Shrinks the dynamic queue
+**                           Function name:         removeFromQueue
+**                            Descriptions:         removes item first added item to the dynamic queue from the dynamic queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none     
 ** 
 **                      Function 3:
 **                           Function name:         getNextInQueue
-**                            Descriptions:         gets the value second item in the queue if there is a second item, if not then returns the value of the head
+**                            Descriptions:         gets the value second item in the dynamic queue if there is a second item, return the head
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       int nextInQueueValue
@@ -166,7 +165,7 @@ class node {
 **                            Descriptions:         prints the dynamic queue
 **                            Input parameters:     none
 **                            Output parameters:    none
-**                            Returned value:       none  
+**                            Returned value:       none 
 **       
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
@@ -179,7 +178,7 @@ class dynamicQueue {
             head = new node(9999);
         }
 
-        void expandDynamicQueue(int data) {
+        void addToQueue(int data) {
             // Create the new Node
             node* newNode = new node(data);
             //saves the node the program was last on
@@ -192,7 +191,7 @@ class dynamicQueue {
             lastTraversed->next = newNode;
         }
 
-        void shrinkDynamicQueue() {
+        void removeFromQueue() {
             node* lastTraversed = head;
             //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
             if(head->next == NULL) {
@@ -234,27 +233,66 @@ class dynamicQueue {
 ** Class Functions:
 **                      Function 1:
 **                           Function name:         addToQueue
-**                            Descriptions:         adds data to the queue, if queue is full replace existing data at the location of the current index
+**                            Descriptions:         adds data to the static queue, if queue is full replace existing data at the location of the current index
 **                            Input parameters:     int data
 **                            Output parameters:    none
 **                            Returned value:       none
+**                      Function 2:
+**                           Function name:         removeFromQueue
+**                            Descriptions:         removes item first added item to the static queue from the static queue
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       none     
+** 
+**                      Function 3:
+**                           Function name:         getNextInQueue
+**                            Descriptions:         gets the value second item in the static queue if there is a second item, if not then returns 9999;
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       int nextInQueueValue
+
+**                      Function 4:
+**                           Function name:         printDynamicQueue
+**                            Descriptions:         prints the static queue
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       none 
 ** 
 **                      
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 class staticQueue {
-    int index;
+    //dex that decides at which location a new item has to be removed from the queue
+    int removeIndex; 
+    //index that decides at which location a new item has to be added to the queue
+    int addIndex;
+    //pointer to the location of the first item in the queue
     int* queue;
+
     public:
+        //constuctor for staticQueue
         staticQueue(int length) {
             queue = new int[length];
-            index = 0;
-        }
-
-        function addToQueue(int data) {
+            removeIndex = 0;
+            addIndex = 0;
 
         }
 
+        void addToQueue(int data) {
+
+        }
+
+        void removeFromQueue() {
+
+        }
+
+        int getNextInQueue() {
+            return nextInQueueValue;
+        }
+        
+        void printDynamicQueue() {
+
+        }
 }
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
