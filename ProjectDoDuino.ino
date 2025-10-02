@@ -155,19 +155,26 @@ class node {
 ** 
 **                      Function 3:
 **                           Function name:         getNextInDynamicQueue
-**                            Descriptions:         gets the value second item in the dynamic queue if there is a second item, return the head
+**                            Descriptions:         gets the value second item in the dynamic queue, if there is no second item, return the head
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       int nextInQueueValue
-
+**
 **                      Function 4:
+**                           Function name:         getNextInDynamicQueueAndRemoveIt
+**                            Descriptions:         gets and removes the value second item in the dynamic queue, if there is no second item, return the head
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       none 
+**
+**                      Function 5:
 **                           Function name:         printDynamicQueue
 **                            Descriptions:         prints the dynamic queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none 
 **       
-** Developer:           Lieuwe Baron
+** Developer:           Lieuwe Baron 
 *********************************************************************************************************/
 class dynamicQueue {
     node *head;
@@ -239,7 +246,7 @@ class dynamicQueue {
 ** Class Functions:
 **                      Function 1:
 **                           Function name:         addToStaticQueue
-**                            Descriptions:         adds data to the static queue, if queue is full replace existing data at the location of the current index
+**                            Descriptions:         adds data to the static queue, if queue is full replace the oldest existing data
 **                            Input parameters:     int data
 **                            Output parameters:    none
 **                            Returned value:       none
@@ -252,12 +259,26 @@ class dynamicQueue {
 ** 
 **                      Function 3:
 **                           Function name:         getNextInStaticQueue
-**                            Descriptions:         gets the value second item in the static queue if there is a second item, if not then returns 9999;
+**                            Descriptions:         gets the value of the oldest item in the static queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       int nextInQueueValue
-
+**
 **                      Function 4:
+**                           Function name:         getNextInStaticQueueAndRemoveIt
+**                            Descriptions:         gets the value of the oldest item in the static queue and removes it from the static queue
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       int nextInQueueValue
+**
+**                      Function 5:
+**                           Function name:         recalculateRemoveIndex
+**                            Descriptions:         recalculates the next item that needs to be removed
+**                            Input parameters:     none
+**                            Output parameters:    none
+**                            Returned value:       none
+**
+**                      Function 6:
 **                           Function name:         printStaticQueue
 **                            Descriptions:         prints the static queue
 **                            Input parameters:     none
@@ -295,16 +316,6 @@ class staticQueue {
 
         }
 
-        void recalculateRemoveIndex() {
-            //if the static queue is full and since the static queue overrides the oldest item if the static queue is full, then the next place to add the item is the oldest 
-            //and since if we want to take the oldest command in the static queue and execute it the next command to be executed and removed is the
-            if(currentLength !>= (maxLength - 1)) {
-                removeIndex = addIndex;
-            } else {
-
-            }
-        }
-
         void addToStaticQueue(int data) {
             queue[addIndex] = data;
             if((addIndex - 1) == maxLength) {
@@ -331,6 +342,16 @@ class staticQueue {
             int nextInQueue = this->getNextInStaticQueue();
             this->removeFromStaticQueue();
             return nextInQueue;
+        }
+
+        void recalculateRemoveIndex() {
+            //if the static queue is full and since the static queue overrides the oldest item if the static queue is full, then the next place to add the item is the oldest 
+            //and since if we want to take the oldest command in the static queue and execute it the next command to be executed and removed is the
+            if(currentLength !>= (maxLength - 1)) {
+                removeIndex = addIndex;
+            } else {
+
+            }
         }
         
         void printStaticQueue() {
