@@ -132,8 +132,8 @@ class node {
 
         // constructor for node
         node(int data) {
-            this->data = data;
-            this->next = NULL;
+            data = data;
+            next = NULL;
         }
 };
 /*********************************************************************************************************
@@ -175,14 +175,14 @@ class dynamicQueue {
     public:
     //constructor for dynamicQueue
         dynamicQueue() {
-            this->head = new node(9999);
+            head = new node(9999);
         }
 
         void addToDynamicQueue(int data) {
             // Create the new Node
             node* newNode = new node(data);
             //saves the node the program was last on
-            node* lastTraversed = this->head;
+            node* lastTraversed = head;
             //traverse the queue
             while (lastTraversed->next != NULL) {
                 lastTraversed = lastTraversed->next;
@@ -192,12 +192,12 @@ class dynamicQueue {
         }
 
         void removeFromDynamicQueue() {
-            node* lastTraversed = this->head;
+            node* lastTraversed = head;
             //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
             if(head->next == NULL) {
             } 
             else {
-                node* secondItem = this->head->next;
+                node* secondItem = head->next;
                 lastTraversed->next = secondItem->next;
                 delete secondItem;
             }
@@ -206,16 +206,16 @@ class dynamicQueue {
         int getNextInDynamicQueue() {
             //if head is the last item in the queue return its value, if it is not return the value of the second item in the queue
             if(head->next == NULL) {
-                return this->head->data;
+                return head->data;
             } else {
-                node* secondItem = this->head->next;
+                node* secondItem = head->next;
                 return secondItem->data;
             }
         }
 
         void printDynamicQueue() {
             int count = 0;
-            node* lastTraversed = this->head;
+            node* lastTraversed = head;
             // Traverse the list
             Serial.println("=================================");
             Serial.println("Printing the Dynamic Queue");
@@ -277,20 +277,24 @@ class staticQueue {
     public:
         //constuctor for staticQueue
         staticQueue(int newStaticQueueMaxLength) {
-            this->addIndex = 0;
-            this->removeIndex = 0;
-            this->maxLength = newStaticQueueMaxLength;
-            this->currentLength = 0;
-            this->queue = new int[newStaticQueueMaxLength];
+            addIndex = 0;
+            removeIndex = 0;
+            maxLength = newStaticQueueMaxLength;
+            currentLength = 0;
+            queue = new int[newStaticQueueMaxLength];
             //fill the array with NULLs
             for(int i = 0; i < newStaticQueueMaxLength; i++) {
-                this->queue[i] = NULL;
+                queue[i] = NULL;
             }
 
         }
 
+        void recalculateRemoveIndex() {
+
+        }
+
         void addToStaticQueue(int data) {
-            this->queue[addIndex] = data;
+            queue[addIndex] = data;
             if((addIndex - 1) == maxLength) {
                 addIndex = 0;
             } else {
@@ -302,7 +306,8 @@ class staticQueue {
         }
 
         void removeFromStaticQueue() {
-            this->queue[removeIndex] = NULL;
+            queue[removeIndex] = NULL;
+            
         }
 
         int getNextInStaticQueue() {
