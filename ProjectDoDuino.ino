@@ -145,14 +145,14 @@ class node {
 **                            Descriptions:         Expands the dynamic queue
 **                            Input parameters:     int data
 **                            Output parameters:    none
-**                            Returned value:       node* head     
+**                            Returned value:       none  
 ** 
 **                      Function 2:
 **                           Function name:         shrinkDynamicQueue
 **                            Descriptions:         Shrinks the dynamic queue
 **                            Input parameters:     none
 **                            Output parameters:    none
-**                            Returned value:       node* head       
+**                            Returned value:       none     
 ** 
 **                      Function 3:
 **                           Function name:         getNextInQueue
@@ -228,7 +228,34 @@ class dynamicQueue {
             Serial.println("=================================");
         }
 };
+/*********************************************************************************************************
+** Class name:          staticQueue
+** Descriptions:        Queue that has a fixed size and loops around
+** Class Functions:
+**                      Function 1:
+**                           Function name:         addToQueue
+**                            Descriptions:         adds data to the queue, if queue is full replace existing data at the location of the current index
+**                            Input parameters:     int data
+**                            Output parameters:    none
+**                            Returned value:       none
+** 
+**                      
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+class staticQueue {
+    int index;
+    int* queue;
+    public:
+        staticQueue(int length) {
+            queue = new int[length];
+            index = 0;
+        }
 
+        function addToQueue(int data) {
+
+        }
+
+}
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
