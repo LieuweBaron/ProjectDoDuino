@@ -141,20 +141,20 @@ class node {
 ** Descriptions:        Queue that can expand and contract, just a linkedlist with a fancy name
 ** Class Functions:
 **                      Function 1:
-**                           Function name:         addToQueue
+**                           Function name:         addToDynamicQueue
 **                            Descriptions:         adds data to the dynamic queue
 **                            Input parameters:     int data
 **                            Output parameters:    none
 **                            Returned value:       none
 **                      Function 2:
-**                           Function name:         removeFromQueue
+**                           Function name:         removeFromDynamicQueue
 **                            Descriptions:         removes item first added item to the dynamic queue from the dynamic queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none     
 ** 
 **                      Function 3:
-**                           Function name:         getNextInQueue
+**                           Function name:         getNextInDynamicQueue
 **                            Descriptions:         gets the value second item in the dynamic queue if there is a second item, return the head
 **                            Input parameters:     none
 **                            Output parameters:    none
@@ -175,14 +175,14 @@ class dynamicQueue {
     public:
     //constructor for dynamicQueue
         dynamicQueue() {
-            head = new node(9999);
+            this->head = new node(9999);
         }
 
-        void addToQueue(int data) {
+        void addToDynamicQueue(int data) {
             // Create the new Node
             node* newNode = new node(data);
             //saves the node the program was last on
-            node* lastTraversed = head;
+            node* lastTraversed = this->head;
             //traverse the queue
             while (lastTraversed->next != NULL) {
                 lastTraversed = lastTraversed->next;
@@ -191,31 +191,31 @@ class dynamicQueue {
             lastTraversed->next = newNode;
         }
 
-        void removeFromQueue() {
-            node* lastTraversed = head;
+        void removeFromDynamicQueue() {
+            node* lastTraversed = this->head;
             //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
             if(head->next == NULL) {
             } 
             else {
-                node* secondItem = head->next;
+                node* secondItem = this->head->next;
                 lastTraversed->next = secondItem->next;
                 delete secondItem;
             }
         }
 
-        int getNextInQueue() {
+        int getNextInDynamicQueue() {
             //if head is the last item in the queue return its value, if it is not return the value of the second item in the queue
             if(head->next == NULL) {
-                return head->data;
+                return this->head->data;
             } else {
-                node* secondItem = head->next;
+                node* secondItem = this->head->next;
                 return secondItem->data;
             }
         }
 
         void printDynamicQueue() {
             int count = 0;
-            node* lastTraversed = head;
+            node* lastTraversed = this->head;
             // Traverse the list
             Serial.println("=================================");
             Serial.println("Printing the Dynamic Queue");
@@ -232,27 +232,27 @@ class dynamicQueue {
 ** Descriptions:        Queue that has a fixed size and loops around
 ** Class Functions:
 **                      Function 1:
-**                           Function name:         addToQueue
+**                           Function name:         addToStaticQueue
 **                            Descriptions:         adds data to the static queue, if queue is full replace existing data at the location of the current index
 **                            Input parameters:     int data
 **                            Output parameters:    none
 **                            Returned value:       none
 **                      Function 2:
-**                           Function name:         removeFromQueue
-**                            Descriptions:         removes item first added item to the static queue from the static queue
+**                           Function name:         removeFromStaticQueue
+**                            Descriptions:         removes oldest item from the static queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none     
 ** 
 **                      Function 3:
-**                           Function name:         getNextInQueue
+**                           Function name:         getNextInStaticQueue
 **                            Descriptions:         gets the value second item in the static queue if there is a second item, if not then returns 9999;
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       int nextInQueueValue
 
 **                      Function 4:
-**                           Function name:         printDynamicQueue
+**                           Function name:         printStaticQueue
 **                            Descriptions:         prints the static queue
 **                            Input parameters:     none
 **                            Output parameters:    none
@@ -262,38 +262,58 @@ class dynamicQueue {
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
 class staticQueue {
-    //dex that decides at which location a new item has to be removed from the queue
-    int removeIndex; 
-    //index that decides at which location a new item has to be added to the queue
+    //index that decides at which location a new item has to be added to the static queue
     int addIndex;
+    //index that decides at which location a new item has to be removed from the static queue
+    int removeIndex; 
+    //length of the static queue
+    int maxLength;
+    //curretn length of the static queue
+    int currentLength;
     //pointer to the location of the first item in the queue
     int* queue;
 
+
     public:
         //constuctor for staticQueue
-        staticQueue(int length) {
-            queue = new int[length];
-            removeIndex = 0;
-            addIndex = 0;
+        staticQueue(int newStaticQueueMaxLength) {
+            this->addIndex = 0;
+            this->removeIndex = 0;
+            this->maxLength = newStaticQueueMaxLength;
+            this->currentLength = 0;
+            this->queue = new int[newStaticQueueMaxLength];
+            //fill the array with NULLs
+            for(int i = 0; i < newStaticQueueMaxLength; i++) {
+                this->queue[i] = NULL;
+            }
 
         }
 
-        void addToQueue(int data) {
-
+        void addToStaticQueue(int data) {
+            this->queue[addIndex] = data;
+            if((addIndex - 1) == maxLength) {
+                addIndex = 0;
+            } else {
+                addIndex++;
+                if(currentLength != (maxLength - 1)) {
+                    currentLength++;
+                }
+            }
         }
 
-        void removeFromQueue() {
-
+        void removeFromStaticQueue() {
+            this->queue[removeIndex] = NULL;
         }
 
-        int getNextInQueue() {
-            return nextInQueueValue;
+        int getNextInStaticQueue() {
+
+            //return nextInQueueValue;
         }
         
-        void printDynamicQueue() {
+        void printStaticQueue() {
 
         }
-}
+};
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
@@ -468,9 +488,14 @@ void loop()  {
     //moveDobotToPos(startX, startY, startZ, startR);
     //ProtocolProcess(); 
     // start infinite loop
-
+    dQueue.addToDynamicQueue(23);
+    dQueue.addToDynamicQueue(345);
+    dQueue.addToDynamicQueue(4977);
+    dQueue.printDynamicQueue();
+    dQueue.removeFromDynamicQueue();
+    dQueue.printDynamicQueue();
     for(; ;) { 
-        int firstInQueue = dQueue.getNextInQueue();
+        int firstInQueue = dQueue.getNextInDynamicQueue();
         //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
         switch(firstInQueue) {
             //9999: dynamic queue is empty, break for new loop
