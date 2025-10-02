@@ -213,6 +213,12 @@ class dynamicQueue {
             }
         }
 
+        int getNextInDynamicQueueAndRemoveIt() {
+            int nextInQueue = this->getNextInDynamicQueue();
+            this->removeFromDynamicQueue();
+            return nextInQueue;
+        }
+
         void printDynamicQueue() {
             int count = 0;
             node* lastTraversed = head;
@@ -290,7 +296,13 @@ class staticQueue {
         }
 
         void recalculateRemoveIndex() {
+            //if the static queue is full and since the static queue overrides the oldest item if the static queue is full, then the next place to add the item is the oldest 
+            //and since if we want to take the oldest command in the static queue and execute it the next command to be executed and removed is the
+            if(currentLength !>= (maxLength - 1)) {
+                removeIndex = addIndex;
+            } else {
 
+            }
         }
 
         void addToStaticQueue(int data) {
@@ -299,7 +311,7 @@ class staticQueue {
                 addIndex = 0;
             } else {
                 addIndex++;
-                if(currentLength != (maxLength - 1)) {
+                if(currentLength !>= (maxLength - 1)) {
                     currentLength++;
                 }
             }
@@ -313,6 +325,12 @@ class staticQueue {
         int getNextInStaticQueue() {
 
             //return nextInQueueValue;
+        }
+
+        int getNextInStaticQueueAndRemoveIt() {
+            int nextInQueue = this->getNextInStaticQueue();
+            this->removeFromStaticQueue();
+            return nextInQueue;
         }
         
         void printStaticQueue() {
