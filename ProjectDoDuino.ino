@@ -598,9 +598,6 @@ void staticQueueExecutor(int firstInQueue) {
     }
 }
 
-void inputHandler() {
-
-}
 /*********************************************************************************************************
 ** Function name:       loop
 ** Descriptions:        loops routine of the dobot
@@ -630,6 +627,20 @@ void loop()  {
         //set currentMillis to millis(), which is the time the board has been running in ms
         //this is how we keep track of time and delays
         currentMillis = millis();
+        //handler for inputs, puts the identifier of the command for the dobot associated with a specified button to the queue
+        if(dobotMode == 1) {
+            if(1 == 1) {
+            
+            } else if(1 == 1) {
+
+            }
+        } else if(dobotMode == 2) {
+            if(1 == 1) {
+            
+            } else if(1 == 1) {
+
+            }
+        }
         //if the mode is for the dynamic queue then:
         if(dobotMode == 1) {
             int firstInQueue = dQueue.getNextInDynamicQueueAndRemoveIt();
