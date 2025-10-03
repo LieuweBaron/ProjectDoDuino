@@ -41,6 +41,7 @@ uint64_t gQueuedCmdIndex;
 ** Global variables // made by lieuwe
 *********************************************************************************************************/
 Pose robotPose;
+int dobotMode = 1;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -304,58 +305,66 @@ class staticQueue {
     public:
         //constuctor for staticQueue
         staticQueue(int newStaticQueueMaxLength) {
-            addIndex = 0;
-            removeIndex = 0;
+            addIndex = 1;
             maxLength = newStaticQueueMaxLength;
-            currentLength = 0;
             queue = new int[newStaticQueueMaxLength];
             //fill the array with NULLs
             for(int i = 0; i < newStaticQueueMaxLength; i++) {
                 queue[i] = NULL;
             }
-
         }
 
         void addToStaticQueue(int data) {
-            queue[addIndex] = data;
-            if((addIndex - 1) == maxLength) {
-                addIndex = 0;
-            } else {
-                addIndex++;
-                if(currentLength !>= (maxLength - 1)) {
-                    currentLength++;
+            //move over all the items in the queue to the right
+            for(int i = (maxLength - 1); i >= 0; i--) {
+                if(i != 0) {
+                    queue[i] = queue[(i-1)];
+                } else {
+                    queue[i] = data;
                 }
             }
         }
 
-        void removeFromStaticQueue() {
-            queue[removeIndex] = NULL;
-            
+        void removeFromStaticQueue(int index) {
+             queue[index] = NULL;
         }
 
         int getNextInStaticQueue() {
-
-            //return nextInQueueValue;
+            //set return value to 9999, will change if the static queue has an item in it that is not null
+            //if the static queue does not have an item in it that is not null return 9999 to indicate that the static queue is empty 
+            int nextInQueueValue = 9999;
+            for(int i = (maxLength - 1); i >= 0; i--) {
+                if(queue[i] != NULL) {
+                    nextInQueueValue = queue[i];
+                    break;
+                }
+            } 
+            return nextInQueueValue;
         }
 
         int getNextInStaticQueueAndRemoveIt() {
-            int nextInQueue = this->getNextInStaticQueue();
-            this->removeFromStaticQueue();
-            return nextInQueue;
+            int nextInQueueValue = 9999;
+            for(int i = (maxLength - 1); i >= 0; i--) {
+                if(queue[i] != NULL) {
+                    nextInQueueValue = queue[i];
+                    removeFromStaticQueue(i);
+                    break;
+                }
+            } 
+            return nextInQueueValue;
         }
 
-        void recalculateRemoveIndex() {
-            //if the static queue is full and since the static queue overrides the oldest item if the static queue is full, then the next place to add the item is the oldest 
-            //and since if we want to take the oldest command in the static queue and execute it the next command to be executed and removed is the
-            if(currentLength !>= (maxLength - 1)) {
-                removeIndex = addIndex;
-            } else {
-
-            }
-        }
+    
         
         void printStaticQueue() {
-
+            Serial.println("=================================");
+            Serial.println("Printing the Static Queue");
+            for(int i = 0; i < maxLength; i++) {
+                //if(queue[i] != NULL) {
+                    Serial.print("index "); Serial.print(i); Serial.print(": "); Serial.println(queue[i]);
+                //}
+            }
+            Serial.println("=================================");
         }
 };
 /*********************************************************************************************************
@@ -516,6 +525,7 @@ void InitRAM(void)
 
 void loop()  {
     dynamicQueue dQueue;
+    staticQueue sQueue(5);
     Serial.println("initialize loop");
     //InitRAM();
 
@@ -532,55 +542,107 @@ void loop()  {
     //moveDobotToPos(startX, startY, startZ, startR);
     //ProtocolProcess(); 
     // start infinite loop
-    dQueue.addToDynamicQueue(23);
+    /*dQueue.addToDynamicQueue(23);
     dQueue.addToDynamicQueue(345);
     dQueue.addToDynamicQueue(4977);
     dQueue.printDynamicQueue();
     dQueue.removeFromDynamicQueue();
-    dQueue.printDynamicQueue();
+    dQueue.printDynamicQueue();*/
+    /*sQueue.addToStaticQueue(13);
+    sQueue.addToStaticQueue(239);
+    sQueue.addToStaticQueue(3487);
+    sQueue.addToStaticQueue(477);
+    sQueue.addToStaticQueue(5342);
+    sQueue.printStaticQueue();
+    Serial.println(sQueue.getNextInStaticQueueAndRemoveIt());
+    sQueue.printStaticQueue();
+    Serial.println(sQueue.getNextInStaticQueueAndRemoveIt());
+    sQueue.printStaticQueue();*/
+
     for(; ;) { 
-        int firstInQueue = dQueue.getNextInDynamicQueue();
-        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
-        switch(firstInQueue) {
-            //9999: dynamic queue is empty, break for new loop
-            case 9999:
-                break;
-            case 0:
-                Serial.println("EMPTY");
-                break;
-            case 1:
-                Serial.println("EMPTY");
-                break;
-            case 2:
-                Serial.println("EMPTY");
-                break;
-            case 3:
-                Serial.println("EMPTY");
-                break;
-            case 4:
-                Serial.println("EMPTY");
-                break;
-            case 5:
-                Serial.println("EMPTY");
-                break;
-            case 6:
-                Serial.println("EMPTY");
-                break;
-            case 7:
-                Serial.println("EMPTY");
-                break;
-            case 8:
-                Serial.println("EMPTY");
-                break;
-            case 9:
-                Serial.println("EMPTY");
-                break;
-            case 10:
-                Serial.println("EMPTY");
-                break;
+        if(dobotMode == 1) {
+            //Serial.println("Dobot Mode = 1");
+            int firstInQueue = dQueue.getNextInDynamicQueue();
+            //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
+            switch(firstInQueue) {
+                //9999: dynamic queue is empty, break for new loop
+                case 9999:
+                    break;
+                case 1:
+                    Serial.println("EMPTY");
+                    break;
+                case 2:
+                    Serial.println("EMPTY");
+                    break;
+                case 3:
+                    Serial.println("EMPTY");
+                    break;
+                case 4:
+                    Serial.println("EMPTY");
+                    break;
+                case 5:
+                    Serial.println("EMPTY");
+                    break;
+                case 6:
+                    Serial.println("EMPTY");
+                    break;
+                case 7:
+                    Serial.println("EMPTY");
+                    break;
+                case 8:
+                    Serial.println("EMPTY");
+                    break;
+                case 9:
+                    Serial.println("EMPTY");
+                    break;
+                case 10:
+                    Serial.println("EMPTY");
+                    break;
+            }
+            //Serial.println("Loop ended");
+            delay(1000);
+        } else if(dobotMode == 2) {
+            //Serial.println("Dobot Mode = 2");
+            int firstInQueue = sQueue.getNextInStaticQueue();
+            //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
+            switch(firstInQueue) {
+                //9999: dynamic queue is empty, break for new loop
+                case 9999:
+                    break;
+                case 1:
+                    Serial.println("EMPTY");
+                    break;
+                case 2:
+                    Serial.println("EMPTY");
+                    break;
+                case 3:
+                    Serial.println("EMPTY");
+                    break;
+                case 4:
+                    Serial.println("EMPTY");
+                    break;
+                case 5:
+                    Serial.println("EMPTY");
+                    break;
+                case 6:
+                    Serial.println("EMPTY");
+                    break;
+                case 7:
+                    Serial.println("EMPTY");
+                    break;
+                case 8:
+                    Serial.println("EMPTY");
+                    break;
+                case 9:
+                    Serial.println("EMPTY");
+                    break;
+                case 10:
+                    Serial.println("EMPTY");
+                    break;
+            }
+            //Serial.println("Loop ended");
+            delay(1000);
         }
-        //Serial.println("Loop ended");
-        delay(1000);
     }
 }
 
