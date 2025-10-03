@@ -243,7 +243,7 @@ class dynamicQueue {
 };
 /*********************************************************************************************************
 ** Class name:          staticQueue
-** Descriptions:        Queue that has a fixed size and loops around
+** Descriptions:        Queue that has a fixed size
 ** Class Functions:
 **                      Function 1:
 **                           Function name:         addToStaticQueue
@@ -254,7 +254,7 @@ class dynamicQueue {
 **                      Function 2:
 **                           Function name:         removeFromStaticQueue
 **                            Descriptions:         removes oldest item from the static queue
-**                            Input parameters:     none
+**                            Input parameters:     int index
 **                            Output parameters:    none
 **                            Returned value:       none     
 ** 
@@ -273,13 +273,6 @@ class dynamicQueue {
 **                            Returned value:       int nextInQueueValue
 **
 **                      Function 5:
-**                           Function name:         recalculateRemoveIndex
-**                            Descriptions:         recalculates the next item that needs to be removed
-**                            Input parameters:     none
-**                            Output parameters:    none
-**                            Returned value:       none
-**
-**                      Function 6:
 **                           Function name:         printStaticQueue
 **                            Descriptions:         prints the static queue
 **                            Input parameters:     none
@@ -367,6 +360,105 @@ class staticQueue {
             Serial.println("=================================");
         }
 };
+/*********************************************************************************************************
+** Function name:       dynamicQueueExecutor
+** Descriptions:        executes the command from the static queue associated with the inputted id and sets the delay until the next command
+** Input parameters:    int firstInQueue
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void dynamicQueueExecutor(int firstInQueueID) {
+    //only execute switch statement ifd the delay between commands is over
+    if(currentMillis >= dynamicDelayMillis) {
+        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
+        switch(firstInQueueID) {
+            //9999: dynamic queue is empty, break for new loop
+            case 9999:
+                break;
+            case 1:
+                Serial.println("EMPTY");
+                break;
+            case 2:
+                Serial.println("EMPTY");
+                break;
+            case 3:
+                Serial.println("EMPTY");
+                break;
+            case 4:
+                Serial.println("EMPTY");
+                break;
+            case 5:
+                Serial.println("EMPTY");
+                break;
+            case 6:
+                Serial.println("EMPTY");
+                break;
+            case 7:
+                Serial.println("EMPTY");
+                break;
+            case 8:
+                Serial.println("EMPTY");
+                break;
+            case 9:
+                Serial.println("EMPTY");
+                break;
+            case 10:
+               Serial.println("EMPTY");
+                break;
+        }
+    }
+}
+/*********************************************************************************************************
+** Function name:       staticQueueExecutor
+** Descriptions:        executes the command from the static queue associated with the inputted id and sets the delay until the next command
+** Input parameters:    int firstInQueue
+** Output parameters:   none
+** Returned value:      none
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+void staticQueueExecutor(int firstInQueueID) {
+//only execute switch statement ifd the delay between commands is over
+    if(currentMillis >= dynamicDelayMillis) {
+        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
+        switch(firstInQueueID) {
+            //9999: dynamic queue is empty, break for new loop
+            case 9999:
+                break;
+            case 1:
+                Serial.println("EMPTY");
+                dynamicDelayMillis += 0;
+                break;
+            case 2:
+                Serial.println("EMPTY");
+                break;
+            case 3:
+                Serial.println("EMPTY");
+                break;
+            case 4:
+                Serial.println("EMPTY");
+                break;
+            case 5:
+                Serial.println("EMPTY");
+                break;
+            case 6:
+                Serial.println("EMPTY");
+                break;
+            case 7:
+                Serial.println("EMPTY");
+                break;
+            case 8:
+                Serial.println("EMPTY");
+                break;
+            case 9:
+                Serial.println("EMPTY");
+                break;
+            case 10:
+               Serial.println("EMPTY");
+                break;
+        }
+    }
+}
 /*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
@@ -511,91 +603,6 @@ void InitRAM(void) {
     
     ProtocolProcess();
     
-}
-
-void dynamicQueueExecutor(int firstInQueue) {
-    //only execute switch statement ifd the delay between commands is over
-    if(currentMillis >= dynamicDelayMillis) {
-        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
-        switch(firstInQueue) {
-            //9999: dynamic queue is empty, break for new loop
-            case 9999:
-                break;
-            case 1:
-                Serial.println("EMPTY");
-                break;
-            case 2:
-                Serial.println("EMPTY");
-                break;
-            case 3:
-                Serial.println("EMPTY");
-                break;
-            case 4:
-                Serial.println("EMPTY");
-                break;
-            case 5:
-                Serial.println("EMPTY");
-                break;
-            case 6:
-                Serial.println("EMPTY");
-                break;
-            case 7:
-                Serial.println("EMPTY");
-                break;
-            case 8:
-                Serial.println("EMPTY");
-                break;
-            case 9:
-                Serial.println("EMPTY");
-                break;
-            case 10:
-               Serial.println("EMPTY");
-                break;
-        }
-    }
-}
-
-void staticQueueExecutor(int firstInQueue) {
-//only execute switch statement ifd the delay between commands is over
-    if(currentMillis >= dynamicDelayMillis) {
-        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
-        switch(firstInQueue) {
-            //9999: dynamic queue is empty, break for new loop
-            case 9999:
-                break;
-            case 1:
-                Serial.println("EMPTY");
-                dynamicDelayMillis += 0;
-                break;
-            case 2:
-                Serial.println("EMPTY");
-                break;
-            case 3:
-                Serial.println("EMPTY");
-                break;
-            case 4:
-                Serial.println("EMPTY");
-                break;
-            case 5:
-                Serial.println("EMPTY");
-                break;
-            case 6:
-                Serial.println("EMPTY");
-                break;
-            case 7:
-                Serial.println("EMPTY");
-                break;
-            case 8:
-                Serial.println("EMPTY");
-                break;
-            case 9:
-                Serial.println("EMPTY");
-                break;
-            case 10:
-               Serial.println("EMPTY");
-                break;
-        }
-    }
 }
 
 /*********************************************************************************************************
