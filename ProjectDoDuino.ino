@@ -431,56 +431,6 @@ void dynamicQueueExecutor(int firstInQueueID) {
     }
 }
 /*********************************************************************************************************
-** Function name:       staticQueueExecutor
-** Descriptions:        executes the command from the static queue associated with the inputted id and sets the delay until the next command
-** Input parameters:    int firstInQueue
-** Output parameters:   none
-** Returned value:      none
-** Developer:           Lieuwe Baron
-*********************************************************************************************************/
-void staticQueueExecutor(int firstInQueueID) {
-//only execute switch statement ifd the delay between commands is over
-    if(currentMillis >= dynamicDelayMillis) {
-        //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
-        switch(firstInQueueID) {
-            //9999: dynamic queue is empty, break for new loop
-            case 9999:
-                break;
-            case 1:
-                Serial.println("EMPTY");
-                dynamicDelayMillis += 0;
-                break;
-            case 2:
-                Serial.println("EMPTY");
-                break;
-            case 3:
-                Serial.println("EMPTY");
-                break;
-            case 4:
-                Serial.println("EMPTY");
-                break;
-            case 5:
-                Serial.println("EMPTY");
-                break;
-            case 6:
-                Serial.println("EMPTY");
-                break;
-            case 7:
-                Serial.println("EMPTY");
-                break;
-            case 8:
-                Serial.println("EMPTY");
-                break;
-            case 9:
-                Serial.println("EMPTY");
-                break;
-            case 10:
-               Serial.println("EMPTY");
-                break;
-        }
-    }
-}
-/*********************************************************************************************************
 ** Function name:       moveDobotToPos
 ** Descriptions:        Move the Dobot arm to a set position
 ** Input parameters:    float x, float y, float z, float r
@@ -637,7 +587,6 @@ void InitRAM(void) {
 
 void loop()  {
     dynamicQueue dQueue;
-    staticQueue sQueue(5);
     Serial.println("initialize loop");
     //display_freeRam();
     //dynamicParameterArray pArr(87,4,7,10);
@@ -661,30 +610,6 @@ void loop()  {
         //this is how we keep track of time and delays
         currentMillis = millis();
         //handler for inputs, puts the identifier of the command for the dobot associated with a specified button to the queue
-        if(dobotMode == 1) {
-            if(1 == 1) {
-            
-            } 
-            if(1 == 1) {
 
-            }
-        } else if(dobotMode == 2) {
-            if(1 == 1) {
-            
-            } 
-            if(1 == 1) {
-
-            }
-        }
-        //if the mode is for the dynamic queue then:
-        if(dobotMode == 1) {
-            int firstInQueue = dQueue.getNextInDynamicQueueAndRemoveIt();
-            //dynamicQueueExecutor(firstInQueue);
-        //if the mode is for the static queue then:
-        } else if(dobotMode == 2) {
-            int firstInQueue = sQueue.getNextInStaticQueueAndRemoveIt();
-            //staticQueueExecutor(firstInQueue);
-        }
-    }
 }
 
