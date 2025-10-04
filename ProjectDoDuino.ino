@@ -1,7 +1,7 @@
 /*********************************************************************************************************
 ------------------------------------Important Information-------------------------------------------------
 **  ProtocolProcess() is used to have the Dobot execute commands. (23:39 - 27/09/2025)
-**
+**  Serial.println(printf("Address of value: %p\n", (void*)ptr)); to print the adress of a pointer in the Serial Monitor
 **
 **
 **
@@ -136,47 +136,60 @@ void printf_begin(void) {
 ** Returned value:      
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-class DynamicParameterArray {
+class dynamicParameterArray {
     int *parameterArray;
-
+    int length;
     public:
-        DynamicParameterArray(int par1) {
+        dynamicParameterArray(int par1) {
             parameterArray = new int[1];
             parameterArray[0] = par1;
+            length = 1;
         }
 
-        DynamicParameterArray(int par1, int par2) {
+        dynamicParameterArray(int par1, int par2) {
             parameterArray = new int[2];
             parameterArray[0] = par1;
             parameterArray[1] = par2;
+            length = 2;
         }
 
-        DynamicParameterArray(int par1, int par2, int par3) {
+        dynamicParameterArray(int par1, int par2, int par3) {
             parameterArray = new int[3];
             parameterArray[0] = par1;
             parameterArray[1] = par2;
             parameterArray[2] = par3;
+            length = 3;
         }
 
-        DynamicParameterArray(int par1, int par2, int par3, int par4) {
+        dynamicParameterArray(int par1, int par2, int par3, int par4) {
             parameterArray = new int[4];
             parameterArray[0] = par1;
             parameterArray[1] = par2;
             parameterArray[2] = par3;
             parameterArray[3] = par4;
+            length = 4;
         }
 
-        DynamicParameterArray(int par1, int par2, int par3, int par4, int par5) {
+        dynamicParameterArray(int par1, int par2, int par3, int par4, int par5) {
             parameterArray = new int[5];
             parameterArray[0] = par1;
             parameterArray[1] = par2;
             parameterArray[2] = par3;
             parameterArray[3] = par4;
             parameterArray[4] = par5;
+            length = 5;
         }
 
-        ~DynamicParameterArray() {
+        void printDynamicParameterArray() {
+            for(int i = 0; i <= (length - 1); i++) {
+                Serial.print("parameter array index "); Serial.print(i); Serial.print(": "); Serial.println(*(parameterArray + i));
+            }
+        }
+
+        void deleteDynamicParameterArray() {
+            //display_freeRam();
             delete[] parameterArray;
+            //display_freeRam();
         }
 };
 /*********************************************************************************************************
@@ -689,6 +702,10 @@ void loop()  {
     dynamicQueue dQueue;
     staticQueue sQueue(5);
     Serial.println("initialize loop");
+    //display_freeRam();
+    //dynamicParameterArray pArr(87,4,7,10);
+    //pArr.printDynamicParameterArray();
+    //pArr.deleteDynamicParameterArray();
     //InitRAM();
     //ProtocolInit();
     //SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
@@ -702,6 +719,7 @@ void loop()  {
 
     // start infinite loop
     for(; ;) {
+        delay(1000);
         //set currentMillis to millis(), which is the time the board has been running in ms
         //this is how we keep track of time and delays
         currentMillis = millis();
@@ -724,11 +742,11 @@ void loop()  {
         //if the mode is for the dynamic queue then:
         if(dobotMode == 1) {
             int firstInQueue = dQueue.getNextInDynamicQueueAndRemoveIt();
-            dynamicQueueExecutor(firstInQueue);
+            //dynamicQueueExecutor(firstInQueue);
         //if the mode is for the static queue then:
         } else if(dobotMode == 2) {
             int firstInQueue = sQueue.getNextInStaticQueueAndRemoveIt();
-            staticQueueExecutor(firstInQueue);
+            //staticQueueExecutor(firstInQueue);
         }
     }
 }
