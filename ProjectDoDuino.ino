@@ -267,55 +267,55 @@ class node {
         
 };
 /*********************************************************************************************************
-** Class name:          dynamicQueue
-** Descriptions:        Queue that can expand and contract, just a linkedlist with a fancy name
+** Class name:          queue
+** Descriptions:        Queue that can expand and contract up until a limit (limit not yet implemented)
 ** Class Functions:
 **                      Function 1:
-**                           Function name:         addToDynamicQueue
-**                            Descriptions:         adds data to the dynamic queue
+**                           Function name:         addToQueue
+**                            Descriptions:         adds data to the queue
 **                            Input parameters:     int data
 **                            Output parameters:    none
 **                            Returned value:       none
 **                      Function 2:
-**                           Function name:         removeFromDynamicQueue
-**                            Descriptions:         removes item first added item to the dynamic queue from the dynamic queue
+**                           Function name:         removeFromQueue
+**                            Descriptions:         removes item first added item to the queue from the queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none     
 ** 
 **                      Function 3:
-**                           Function name:         getNextInDynamicQueue
-**                            Descriptions:         gets the value second item in the dynamic queue, if there is no second item, return the head
+**                           Function name:         getNextInQueue
+**                            Descriptions:         gets the value second item in the queue, if there is no second item, return the head
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       int nextInQueueValue
 **
 **                      Function 4:
-**                           Function name:         getNextInDynamicQueueAndRemoveIt
-**                            Descriptions:         gets and removes the value second item in the dynamic queue, if there is no second item, return the head
+**                           Function name:         getNextInQueueAndRemoveIt
+**                            Descriptions:         gets and removes the value second item in the queue, if there is no second item, return the head
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none 
 **
 **                      Function 5:
 **                           Function name:         printDynamicQueue
-**                            Descriptions:         prints the dynamic queue
+**                            Descriptions:         prints the queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none 
 **       
 ** Developer:           Lieuwe Baron 
 *********************************************************************************************************/
-class dynamicQueue {
+class queue {
     node *head;
 
     public:
-    //constructor for dynamicQueue
-        dynamicQueue() {
+    //constructor for queue
+        queue() {
             head = new node(9999);
         }
 
-        void addToDynamicQueue(int command, int p[], int pSize) {
+        void addToQueue(int command, int p[], int pSize) {
             node *newNode;
             //not elegant, but it works
             if(pSize == 1) {
@@ -339,7 +339,7 @@ class dynamicQueue {
             lastTraversed->next = newNode;
         }
 
-        void removeFromDynamicQueue() {
+        void removeFromQueue() {
             node* lastTraversed = head;
             //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
             if(head->next == NULL) {
@@ -351,7 +351,7 @@ class dynamicQueue {
             }
         }
 
-        int getNextInDynamicQueue() {
+        int getNextInQueue() {
             //if head is the last item in the queue return its value, if it is not return the value of the second item in the queue
             if(head->next == NULL) {
                 return head->data;
@@ -361,18 +361,18 @@ class dynamicQueue {
             }
         }
 
-        int getNextInDynamicQueueAndRemoveIt() {
-            int nextInQueue = this->getNextInDynamicQueue();
-            this->removeFromDynamicQueue();
+        int getNextInQueueAndRemoveIt() {
+            int nextInQueue = this->getNextInQueue();
+            this->removeFromQueue();
             return nextInQueue;
         }
 
-        void printDynamicQueue() {
+        void printQueue() {
             int count = 0;
             node *lastTraversed = head;
             // Traverse the list
             Serial.println("=================================");
-            Serial.println("Printing the Dynamic Queue");
+            Serial.println("Printing the Queue");
             while (lastTraversed != NULL) {
                 count++;
                 Serial.print("item #"); Serial.print(count); Serial.print(" ");Serial.println(lastTraversed->data);
@@ -389,8 +389,8 @@ class dynamicQueue {
 ** Returned value:      none
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-void dynamicQueueExecutor(int firstInQueueID) {
-    //only execute switch statement ifd the delay between commands is over
+void queueExecutor(int firstInQueueID) {
+    //only execute switch statement if the delay between commands is over
     if(currentMillis >= dynamicDelayMillis) {
         //this switch statement ensures that only one item from the queue can be handled in each iteration of the loop
         switch(firstInQueueID) {
@@ -586,7 +586,7 @@ void InitRAM(void) {
 *********************************************************************************************************/
 
 void loop()  {
-    dynamicQueue dQueue;
+    queue cmdsQueue;
     Serial.println("initialize loop");
     //display_freeRam();
     //dynamicParameterArray pArr(87,4,7,10);
@@ -610,6 +610,6 @@ void loop()  {
         //this is how we keep track of time and delays
         currentMillis = millis();
         //handler for inputs, puts the identifier of the command for the dobot associated with a specified button to the queue
-
+    }
 }
 
