@@ -78,6 +78,16 @@ void setup() {
     FlexiTimer2::start();
 }
 
+void display_freeRam() {
+  Serial.print(F("- SRAM left: ")); Serial.println(freeRam());
+}
+
+int freeRam() {
+  extern int __heap_start,*__brkval;
+  int v;
+  return (int)&v - (__brkval == 0  
+    ? (int)&__heap_start : (int) __brkval);  
+}
 /*********************************************************************************************************
 ** Function name:       Serialread
 ** Descriptions:        import data to rxbuffer
@@ -119,8 +129,59 @@ void printf_begin(void) {
     fdevopen( &Serial_putc, 0 );
 }
 /*********************************************************************************************************
-** Class name:          node
+** Class name:          DynamicParameterArray
 ** Descriptions:        Node for the dynamic queue (linkedlist)
+** Input parameters:    
+** Output parameters:
+** Returned value:      
+** Developer:           Lieuwe Baron
+*********************************************************************************************************/
+class DynamicParameterArray {
+    int *parameterArray;
+
+    public:
+        DynamicParameterArray(int par1) {
+            parameterArray = new int[1];
+            parameterArray[0] = par1;
+        }
+
+        DynamicParameterArray(int par1, int par2) {
+            parameterArray = new int[2];
+            parameterArray[0] = par1;
+            parameterArray[1] = par2;
+        }
+
+        DynamicParameterArray(int par1, int par2, int par3) {
+            parameterArray = new int[3];
+            parameterArray[0] = par1;
+            parameterArray[1] = par2;
+            parameterArray[2] = par3;
+        }
+
+        DynamicParameterArray(int par1, int par2, int par3, int par4) {
+            parameterArray = new int[4];
+            parameterArray[0] = par1;
+            parameterArray[1] = par2;
+            parameterArray[2] = par3;
+            parameterArray[3] = par4;
+        }
+
+        DynamicParameterArray(int par1, int par2, int par3, int par4, int par5) {
+            parameterArray = new int[5];
+            parameterArray[0] = par1;
+            parameterArray[1] = par2;
+            parameterArray[2] = par3;
+            parameterArray[3] = par4;
+            parameterArray[4] = par5;
+        }
+
+        ~DynamicParameterArray() {
+            delete[] parameterArray;
+        }
+};
+/*********************************************************************************************************
+** Class name:          node
+** Descriptions:        Node for the dynamic queue 
 ** Input parameters:    
 ** Output parameters:
 ** Returned value:      
@@ -130,11 +191,21 @@ class node {
     public:
         int data;
         node *next;
-
-        // constructor for node
+        int *pointerToVariables;
+        int parameterArraySize;
+        //constructs the head
         node(int data) {
             data = data;
             next = NULL;
+            pointerToVariables = NULL;
+            parameterArraySize = NULL;
+        }
+        // constructor for node
+        node(int data, int *ptrToVariables, int pSize) {
+            data = data;
+            next = NULL;
+            pointerToVariables = ptrToVariables;
+            parameterArraySize = pSize;
         }
 };
 /*********************************************************************************************************
@@ -186,7 +257,7 @@ class dynamicQueue {
             head = new node(9999);
         }
 
-        void addToDynamicQueue(int data) {
+        void addToDynamicQueue(int data, int *ptrToParameters, int Psize) {
             // Create the new Node
             node *newNode = new node(data);
             //saves the node the program was last on
@@ -292,7 +363,7 @@ class staticQueue {
     //curretn length of the static queue
     int currentLength;
     //pointer to the location of the first item in the queue
-    int* queue;
+    int *queue;
 
 
     public:
@@ -638,13 +709,15 @@ void loop()  {
         if(dobotMode == 1) {
             if(1 == 1) {
             
-            } else if(1 == 1) {
+            } 
+            if(1 == 1) {
 
             }
         } else if(dobotMode == 2) {
             if(1 == 1) {
             
-            } else if(1 == 1) {
+            } 
+            if(1 == 1) {
 
             }
         }
