@@ -269,7 +269,8 @@ class dynamicQueue {
         dynamicQueue() {
             head = new node(9999);
         }
-
+        
+        dQueue.addToDynamicQueue(2, )
         void addToDynamicQueue(int data, int *ptrToParameters, int Psize) {
             // Create the new Node
             node *newNode = new node(data);
