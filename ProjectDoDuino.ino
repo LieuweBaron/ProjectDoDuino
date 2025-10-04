@@ -136,59 +136,60 @@ void printf_begin(void) {
 ** Returned value:      
 ** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-class dynamicParameterArray {
-    int *parameterArray;
+class parameterArray {
+    int *pArray;
     int length;
     public:
-        dynamicParameterArray(int par1) {
-            parameterArray = new int[1];
-            parameterArray[0] = par1;
+        parameterArray(int par1) {
+            pArray = new int[1];
+            pArray[0] = par1;
+
             length = 1;
         }
 
-        dynamicParameterArray(int par1, int par2) {
-            parameterArray = new int[2];
-            parameterArray[0] = par1;
-            parameterArray[1] = par2;
+        parameterArray(int par1, int par2) {
+            pArray = new int[2];
+            pArray[0] = par1;
+            pArray[1] = par2;
             length = 2;
         }
 
-        dynamicParameterArray(int par1, int par2, int par3) {
-            parameterArray = new int[3];
-            parameterArray[0] = par1;
-            parameterArray[1] = par2;
-            parameterArray[2] = par3;
+        parameterArray(int par1, int par2, int par3) {
+            pArray = new int[3];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
             length = 3;
         }
 
-        dynamicParameterArray(int par1, int par2, int par3, int par4) {
-            parameterArray = new int[4];
-            parameterArray[0] = par1;
-            parameterArray[1] = par2;
-            parameterArray[2] = par3;
-            parameterArray[3] = par4;
+        parameterArray(int par1, int par2, int par3, int par4) {
+            pArray = new int[4];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
+            pArray[3] = par4;
             length = 4;
         }
 
-        dynamicParameterArray(int par1, int par2, int par3, int par4, int par5) {
-            parameterArray = new int[5];
-            parameterArray[0] = par1;
-            parameterArray[1] = par2;
-            parameterArray[2] = par3;
-            parameterArray[3] = par4;
-            parameterArray[4] = par5;
+        parameterArray(int par1, int par2, int par3, int par4, int par5) {
+            pArray = new int[5];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
+            pArray[3] = par4;
+            pArray[4] = par5;
             length = 5;
         }
 
         void printDynamicParameterArray() {
             for(int i = 0; i <= (length - 1); i++) {
-                Serial.print("parameter array index "); Serial.print(i); Serial.print(": "); Serial.println(*(parameterArray + i));
+                Serial.print("parameter array index "); Serial.print(i); Serial.print(": "); Serial.println(*(pArray + i));
             }
         }
 
         void deleteDynamicParameterArray() {
             //display_freeRam();
-            delete[] parameterArray;
+            delete[] pArray;
             //display_freeRam();
         }
 };
@@ -204,22 +205,66 @@ class node {
     public:
         int data;
         node *next;
-        int *pointerToVariables;
-        int parameterArraySize;
+        int pArraySize;
+        int *pArray;
         //constructs the head
         node(int data) {
             data = data;
             next = NULL;
-            pointerToVariables = NULL;
-            parameterArraySize = NULL;
+            pArraySize = NULL;
+            pArray = NULL;
         }
-        // constructor for node
-        node(int data, int *ptrToVariables, int pSize) {
+
+        node(int data, int par1) {
             data = data;
             next = NULL;
-            pointerToVariables = ptrToVariables;
-            parameterArraySize = pSize;
+            pArraySize = 1;
+            pArray = new int[1];
+            pArray[0] = par1;
         }
+
+        node(int data, int par1, int par2) {
+            data = data;
+            next = NULL;
+            pArraySize = 2;
+            pArray = new int[2];
+            pArray[0] = par1;
+            pArray[1] = par2;
+        }
+
+        node(int data, int par1, int par2, int par3) {
+            data = data;
+            next = NULL;
+            pArraySize = 3;
+            pArray = new int[3];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
+        }
+
+        node(int data, int par1, int par2, int par3, int par4) {
+            data = data;
+            next = NULL;
+            pArraySize = 4;
+            pArray = new int[4];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
+            pArray[3] = par4;
+        }
+
+        node(int data, int par1, int par2, int par3, int par4, int par5) {
+            data = data;
+            next = NULL;
+            pArraySize = 5;
+            pArray = new int[5];
+            pArray[0] = par1;
+            pArray[1] = par2;
+            pArray[2] = par3;
+            pArray[3] = par4;
+            pArray[4] = par5;
+        }
+        
 };
 /*********************************************************************************************************
 ** Class name:          dynamicQueue
@@ -269,11 +314,21 @@ class dynamicQueue {
         dynamicQueue() {
             head = new node(9999);
         }
-        
-        dQueue.addToDynamicQueue(2, )
-        void addToDynamicQueue(int data, int *ptrToParameters, int Psize) {
-            // Create the new Node
-            node *newNode = new node(data);
+
+        void addToDynamicQueue(int command, int p[], int pSize) {
+            node *newNode;
+            //not elegant, but it works
+            if(pSize == 1) {
+                newNode = new node(command, p[0]);
+            } else if(pSize == 2) {
+                newNode = new node(command, p[0], p[1]);
+            } else if(pSize == 3) {
+                newNode = new node(command, p[0], p[1], p[2]);
+            } else if(pSize == 4) {
+                newNode = new node(command, p[0], p[1], p[2], p[3]);
+            } else if(pSize == 5) {
+                newNode = new node(command, p[0], p[1], p[2], p[3], p[4]);
+            }
             //saves the node the program was last on
             node *lastTraversed = head;
             //traverse the queue
@@ -374,7 +429,7 @@ class staticQueue {
     int removeIndex; 
     //length of the static queue
     int maxLength;
-    //curretn length of the static queue
+    //current length of the static queue
     int currentLength;
     //pointer to the location of the first item in the queue
     int *queue;
