@@ -45,6 +45,7 @@ int dobotMode = 1;
 int currentMillis = 0;
 int dynamicDelayMillis = 0;
 int staticDelayMillis = 0;
+int queueSize = 5;
 //start position of the dobot, based on cartesian coordinates
 float startX = 0.00;       
 float startY = -200.00;       
@@ -129,71 +130,6 @@ void printf_begin(void) {
     fdevopen( &Serial_putc, 0 );
 }
 /*********************************************************************************************************
-** Class name:          DynamicParameterArray
-** Descriptions:        Node for the dynamic queue (linkedlist)
-** Input parameters:    
-** Output parameters:
-** Returned value:      
-** Developer:           Lieuwe Baron
-*********************************************************************************************************/
-class parameterArray {
-    int *pArray;
-    int length;
-    public:
-        parameterArray(int par1) {
-            pArray = new int[1];
-            pArray[0] = par1;
-
-            length = 1;
-        }
-
-        parameterArray(int par1, int par2) {
-            pArray = new int[2];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            length = 2;
-        }
-
-        parameterArray(int par1, int par2, int par3) {
-            pArray = new int[3];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-            length = 3;
-        }
-
-        parameterArray(int par1, int par2, int par3, int par4) {
-            pArray = new int[4];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-            pArray[3] = par4;
-            length = 4;
-        }
-
-        parameterArray(int par1, int par2, int par3, int par4, int par5) {
-            pArray = new int[5];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-            pArray[3] = par4;
-            pArray[4] = par5;
-            length = 5;
-        }
-
-        void printDynamicParameterArray() {
-            for(int i = 0; i <= (length - 1); i++) {
-                Serial.print("parameter array index "); Serial.print(i); Serial.print(": "); Serial.println(*(pArray + i));
-            }
-        }
-
-        void deleteDynamicParameterArray() {
-            //display_freeRam();
-            delete[] pArray;
-            //display_freeRam();
-        }
-};
-/*********************************************************************************************************
 ** Class name:          node
 ** Descriptions:        Node for the dynamic queue 
 ** Input parameters:    
@@ -203,180 +139,118 @@ class parameterArray {
 *********************************************************************************************************/
 class node {
     public:
-        int data;
-        node *next;
+        int command;
         int pArraySize;
-        int *pArray;
+        int pArray[4] = {9999,9999,9999,9999};
         //constructs the head
-        node(int data) {
-            data = data;
-            next = NULL;
-            pArraySize = NULL;
-            pArray = NULL;
-        }
-
-        node(int data, int par1) {
-            data = data;
-            next = NULL;
-            pArraySize = 1;
-            pArray = new int[1];
-            pArray[0] = par1;
-        }
-
-        node(int data, int par1, int par2) {
-            data = data;
-            next = NULL;
-            pArraySize = 2;
-            pArray = new int[2];
-            pArray[0] = par1;
-            pArray[1] = par2;
-        }
-
-        node(int data, int par1, int par2, int par3) {
-            data = data;
-            next = NULL;
-            pArraySize = 3;
-            pArray = new int[3];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-        }
-
-        node(int data, int par1, int par2, int par3, int par4) {
-            data = data;
-            next = NULL;
+        node() {
+            command = 9999;
             pArraySize = 4;
-            pArray = new int[4];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-            pArray[3] = par4;
-        }
-
-        node(int data, int par1, int par2, int par3, int par4, int par5) {
-            data = data;
-            next = NULL;
-            pArraySize = 5;
-            pArray = new int[5];
-            pArray[0] = par1;
-            pArray[1] = par2;
-            pArray[2] = par3;
-            pArray[3] = par4;
-            pArray[4] = par5;
-        }
-        
+        }     
 };
 /*********************************************************************************************************
 ** Class name:          queue
-** Descriptions:        Queue that can expand and contract up until a limit (limit not yet implemented)
+** Descriptions:        Queue that has a fixed size
 ** Class Functions:
 **                      Function 1:
 **                           Function name:         addToQueue
-**                            Descriptions:         adds data to the queue
-**                            Input parameters:     int data
+**                            Descriptions:         adds command and parameter data to the queue, if queue is full replace the oldest existing data
+**                            Input parameters:     int command, int p[]
 **                            Output parameters:    none
 **                            Returned value:       none
 **                      Function 2:
 **                           Function name:         removeFromQueue
-**                            Descriptions:         removes item first added item to the queue from the queue
-**                            Input parameters:     none
+**                            Descriptions:         removes oldest item from the queue
+**                            Input parameters:     int index
 **                            Output parameters:    none
 **                            Returned value:       none     
-** 
+**
 **                      Function 3:
-**                           Function name:         getNextInQueue
-**                            Descriptions:         gets the value second item in the queue, if there is no second item, return the head
+**                           Function name:         getNextInQueueAndRemoveIt
+**                            Descriptions:         gets the value of the oldest item in the queue and removes it from the queue
 **                            Input parameters:     none
 **                            Output parameters:    none
-**                            Returned value:       int nextInQueueValue
+**                            Returned value:       int *nextInQueueValueArray
 **
 **                      Function 4:
-**                           Function name:         getNextInQueueAndRemoveIt
-**                            Descriptions:         gets and removes the value second item in the queue, if there is no second item, return the head
-**                            Input parameters:     none
-**                            Output parameters:    none
-**                            Returned value:       none 
-**
-**                      Function 5:
-**                           Function name:         printDynamicQueue
+**                           Function name:         printQueue
 **                            Descriptions:         prints the queue
 **                            Input parameters:     none
 **                            Output parameters:    none
 **                            Returned value:       none 
-**       
-** Developer:           Lieuwe Baron 
+** 
+**                      
+** Developer:           Lieuwe Baron
 *********************************************************************************************************/
-class queue {
-    node *head;
-
+class cmdQueue {
+    //index that decides at which location a new item has to be added to the queue
+    int addIndex;
+    //index that decides at which location a new item has to be removed from the queue
+    int removeIndex; 
+    //length of the queue
+    int maxLength = 5;
+    //current length of the queue
+    int currentLength;
+    //pointer to the location of the first item in the queue
+    node queue[5];
     public:
-    //constructor for queue
-        queue() {
-            head = new node(9999);
+        //constuctor for queue
+        cmdQueue() {
+            addIndex = 1;
         }
 
-        void addToQueue(int command, int p[], int pSize) {
-            node *newNode;
-            //not elegant, but it works
-            if(pSize == 1) {
-                newNode = new node(command, p[0]);
-            } else if(pSize == 2) {
-                newNode = new node(command, p[0], p[1]);
-            } else if(pSize == 3) {
-                newNode = new node(command, p[0], p[1], p[2]);
-            } else if(pSize == 4) {
-                newNode = new node(command, p[0], p[1], p[2], p[3]);
-            } else if(pSize == 5) {
-                newNode = new node(command, p[0], p[1], p[2], p[3], p[4]);
+        void addToQueue(int command, int p[]) {
+            for(int i = (maxLength - 1); i >= 0; i--) {
+                if(i != 0) {
+                    queue[i].command = queue[i-1].command;
+                    for(int j = 0; j <= 3; j++) {
+
+                            queue[i].pArray[j] = queue[i-1].pArray[j];
+                    } 
+                } else {
+                    queue[i].command = command;
+                    for(int j = 0; j <= 3; j++) {
+                        queue[i].pArray[j] = p[j];
+                    }
+                }
             }
-            //saves the node the program was last on
-            node *lastTraversed = head;
-            //traverse the queue
-            while (lastTraversed->next != NULL) {
-                lastTraversed = lastTraversed->next;
-            }
-            //add the next node to the back of the queue
-            lastTraversed->next = newNode;
         }
 
-        void removeFromQueue() {
-            node* lastTraversed = head;
-            //if head is the last item in the queue then do nothing, else remove the seconditem from the queue
-            if(head->next == NULL) {
+        void removeFromQueue(int index) {
+             queue[index].command = 9999;
+             for(int j = 0; j <= 3; j++) {
+                        queue[index].pArray[j] = 9999;
+                    }
+        }
+
+
+
+        int * getNextInQueueAndRemoveIt() {
+            int *nextInQueueValueArray = new int[5];
+            for(int i = 0; i <= 5; i++) {
+                nextInQueueValueArray[i] = 9999;
+            }
+            for(int i = (maxLength - 1); i >= 0; i--) {
+                if(queue[i].command != 9999) {
+                    nextInQueueValueArray[0] = queue[i].command;
+                    for(int j = 1; j <= 4; j++) {
+                        nextInQueueValueArray[j] = queue[i].pArray[j-1];
+                    }
+                    removeFromQueue(i);
+                    break;
+                }
             } 
-            else {
-                node *secondItem = head->next;
-                lastTraversed->next = secondItem->next;
-                delete secondItem;
-            }
+            return nextInQueueValueArray;
         }
 
-        int getNextInQueue() {
-            //if head is the last item in the queue return its value, if it is not return the value of the second item in the queue
-            if(head->next == NULL) {
-                return head->data;
-            } else {
-                node *secondItem = head->next;
-                return secondItem->data;
-            }
-        }
-
-        int getNextInQueueAndRemoveIt() {
-            int nextInQueue = this->getNextInQueue();
-            this->removeFromQueue();
-            return nextInQueue;
-        }
+    
 
         void printQueue() {
-            int count = 0;
-            node *lastTraversed = head;
-            // Traverse the list
             Serial.println("=================================");
-            Serial.println("Printing the Queue");
-            while (lastTraversed != NULL) {
-                count++;
-                Serial.print("item #"); Serial.print(count); Serial.print(" ");Serial.println(lastTraversed->data);
-                lastTraversed = lastTraversed->next;
+            Serial.println("Printing the Static Queue");
+            for(int i = 0; i < maxLength; i++) {
+                Serial.print("index "); Serial.print(i); Serial.print(": "); Serial.print("Command: "); Serial.print(queue[i].command); Serial.print("; parameters: "); 
+                Serial.print(queue[i].pArray[0]); Serial.print(", "); Serial.print(queue[i].pArray[1]); Serial.print(", "); Serial.print(queue[i].pArray[2]); Serial.print(", "); Serial.print(queue[i].pArray[3]); Serial.println(";");
             }
             Serial.println("=================================");
         }
@@ -586,8 +460,28 @@ void InitRAM(void) {
 *********************************************************************************************************/
 
 void loop()  {
-    queue cmdsQueue;
+    cmdQueue cmdsQueue;
     Serial.println("initialize loop");
+    int params[4] = {1760,290,3650, 9999}; 
+    int params2[4] = {100, 200, 9999, 9999}; 
+    int params3[4] = {1000,2000,3000, 4000}; 
+    int params4[4] = {8675, 34, 645, 9999}; 
+    int params5[4] = {68,564,6548, 4333}; 
+    cmdsQueue.addToQueue(8, params);
+    cmdsQueue.addToQueue(54, params2);
+    cmdsQueue.addToQueue(3, params3);
+    cmdsQueue.addToQueue(2, params4);
+    cmdsQueue.addToQueue(5, params5);
+    cmdsQueue.printQueue();
+    int *output = cmdsQueue.getNextInQueueAndRemoveIt();
+    Serial.print("next in array: "); Serial.print("Command: "); Serial.print(output[0]); Serial.print(" Parameters: "); 
+    for(int i = 1; i <= 5; i++) {
+        Serial.print(output[i]); Serial.print(", ");  
+    }
+    cmdsQueue.printQueue();
+    //cmdsQueue.addToQueue(3, params, 4);
+    //cmdsQueue.addToQueue(3, params, 4);
+    //cmdsQueue.printQueue();
     //display_freeRam();
     //dynamicParameterArray pArr(87,4,7,10);
     //pArr.printDynamicParameterArray();
