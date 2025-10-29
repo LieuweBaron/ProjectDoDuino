@@ -200,30 +200,29 @@ class cmdQueue {
         }
 
         void addToQueue(int command, int p[]) {
-            for(int i = (maxLength - 1); i >= 0; i--) {
-                if(i != 0) {
-                    queue[i].command = queue[i-1].command;
-                    for(int j = 0; j <= 3; j++) {
-
+            if (queue[maxLength - 1].command == 9999) {
+                for(int i = (maxLength - 1); i >= 0; i--) {
+                    if(i != 0) {
+                        queue[i].command = queue[i-1].command;
+                        for(int j = 0; j <= 3; j++) {
                             queue[i].pArray[j] = queue[i-1].pArray[j];
-                    } 
-                } else {
-                    queue[i].command = command;
-                    for(int j = 0; j <= 3; j++) {
-                        queue[i].pArray[j] = p[j];
+                        } 
+                    } else {
+                        queue[i].command = command;
+                        for(int j = 0; j <= 3; j++) {
+                            queue[i].pArray[j] = p[j];
+                        }
                     }
                 }
-            }
+            } 
         }
 
         void removeFromQueue(int index) {
-             queue[index].command = 9999;
-             for(int j = 0; j <= 3; j++) {
-                        queue[index].pArray[j] = 9999;
-                    }
+            queue[index].command = 9999;
+            for(int j = 0; j <= 3; j++) {
+                queue[index].pArray[j] = 9999;
+            }
         }
-
-
 
         int * getNextInQueueAndRemoveIt() {
             int *nextInQueueValueArray = new int[5];
@@ -243,11 +242,9 @@ class cmdQueue {
             return nextInQueueValueArray;
         }
 
-    
-
         void printQueue() {
             Serial.println("=================================");
-            Serial.println("Printing the Static Queue");
+            Serial.println("Printing the Command Queue");
             for(int i = 0; i < maxLength; i++) {
                 Serial.print("index "); Serial.print(i); Serial.print(": "); Serial.print("Command: "); Serial.print(queue[i].command); Serial.print("; parameters: "); 
                 Serial.print(queue[i].pArray[0]); Serial.print(", "); Serial.print(queue[i].pArray[1]); Serial.print(", "); Serial.print(queue[i].pArray[2]); Serial.print(", "); Serial.print(queue[i].pArray[3]); Serial.println(";");
@@ -473,7 +470,15 @@ void loop()  {
     cmdsQueue.addToQueue(2, params4);
     cmdsQueue.addToQueue(5, params5);
     cmdsQueue.printQueue();
+    cmdsQueue.addToQueue(5, params5);
+    cmdsQueue.addToQueue(98, params3);
+    cmdsQueue.addToQueue(6576, params3);
+    cmdsQueue.addToQueue(786, params3);
+    cmdsQueue.printQueue();
     int *output = cmdsQueue.getNextInQueueAndRemoveIt();
+    //int *output2 = cmdsQueue.getNextInQueueAndRemoveIt();
+    //int *output3 = cmdsQueue.getNextInQueueAndRemoveIt();
+    //int *output4 = cmdsQueue.getNextInQueueAndRemoveIt();
     Serial.print("next in array: "); Serial.print("Command: "); Serial.print(output[0]); Serial.print(" Parameters: "); 
     for(int i = 1; i <= 5; i++) {
         Serial.print(output[i]); Serial.print(", ");  
