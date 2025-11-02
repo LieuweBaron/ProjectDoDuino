@@ -61,7 +61,62 @@ float currentR = startR;
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 
-int MoveIncrement = 0;
+float moveIncrement = 0.0;
+int currentPage = 1;
+//dual state button states
+int bt100CurrState = -1;
+int bt100PrevState = -1;
+
+int bt101CurrState = -1;
+int bt101PrevState = -1;
+
+int bt102CurrState = -1;
+int bt102PrevState = -1;
+
+int bt103CurrState = -1;
+int bt103PrevState = -1;
+
+int bt104CurrState = -1;
+int bt104PrevState = -1;
+
+int bt300CurrState = -1;
+int bt300PrevState = -1;
+
+int bt301CurrState = -1;
+int bt301PrevState = -1;
+
+int bt302CurrState = -1;
+int bt302PrevState = -1;
+
+int bt303CurrState = -1;
+int bt303PrevState = -1;
+
+int bt304CurrState = -1;
+int bt304PrevState = -1;
+
+int bt305CurrState = -1;
+int bt305PrevState = -1;
+
+int bt306CurrState = -1;
+int bt306PrevState = -1;
+
+int bt307CurrState = -1;
+int bt307PrevState = -1;
+
+int bt308CurrState = -1;
+int bt308PrevState = -1;
+
+int bt309CurrState = -1;
+int bt309PrevState = -1;
+
+int bt310CurrState = -1;
+int bt310PrevState = -1;
+
+int bt311CurrState = -1;
+int bt311PrevState = -1;
+
+
+
 
 //pages on nextion screen
 NexPage page1 = NexPage(0, 0, "page0");  //page 0, reffered to as page 1, Controls page
@@ -119,15 +174,15 @@ NexDSButton bt309 = NexDSButton(2, 11, "bt309");  //button that activates repeat
 NexDSButton bt310 = NexDSButton(2, 13, "bt310");  //button that activates repeat mode on route 3, page 3
 NexDSButton bt311 = NexDSButton(2, 15, "bt311");  //button that activates repeat mode on route 4, page 3
 //text fields on nextion screen
-NexText t100 = NexText(0, 1, "t100");   //current X position, page 1
-NexText t101 = NexText(0, 5, "t101");   //upper bound of the current X limit, page 1
-NexText t102 = NexText(0, 6, "t102");   //lower bount of the current X limit, page 1
-NexText t103 = NexText(0, 2, "t103");   //current Y position, page 1
-NexText t104 = NexText(0, 3, "t104");   //upper bound of the current Y limit, page 1
-NexText t105 = NexText(0, 7, "t105");   //lower bount of the current Y limit, page 1
-NexText t106 = NexText(0, 4, "t106");   //current Z position, page 1
-NexText t107 = NexText(0, 8, "t107");   //upper bound of the current Z limit, page 1
-NexText t108 = NexText(0, 9, "t108");   //lower bount of the current Z limit, page 1
+NexText t100 = NexText(0, 1, "t100");  //current X position, page 1
+NexText t101 = NexText(0, 5, "t101");  //upper bound of the current X limit, page 1
+NexText t102 = NexText(0, 6, "t102");  //lower bount of the current X limit, page 1
+NexText t103 = NexText(0, 2, "t103");  //current Y position, page 1
+NexText t104 = NexText(0, 3, "t104");  //upper bound of the current Y limit, page 1
+NexText t105 = NexText(0, 7, "t105");  //lower bount of the current Y limit, page 1
+NexText t106 = NexText(0, 4, "t106");  //current Z position, page 1
+NexText t107 = NexText(0, 8, "t107");  //upper bound of the current Z limit, page 1
+NexText t108 = NexText(0, 9, "t108");  //lower bount of the current Z limit, page 1
 
 NexText t200 = NexText(1, 8, "t200");   //current X, page 2
 NexText t201 = NexText(1, 10, "t201");  //current Y, page 2
@@ -211,23 +266,26 @@ NexTouch *nex_listen_list[] = {
 //page change event handlers
 void page1PushEventHandler(void *ptr) {
   Serial.println("Page 1");
+  currentPage = 1;
 }
 
 void page2PushEventHandler(void *ptr) {
   Serial.println("Page 2");
+  currentPage = 2;
 }
 void page3PushEventHandler(void *ptr) {
   Serial.println("Page 3");
+  currentPage = 3;
 }
 
 void page4PushEventHandler(void *ptr) {
   Serial.println("Page 4");
+  currentPage = 4;
 }
 
 //button event handlers
 void b100PopEventHandler(void *ptr) {
   Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
-  
 }
 
 void b101PopEventHandler(void *ptr) {
@@ -335,71 +393,251 @@ void b409PopEventHandler(void *ptr) {
 
 //dual-state buttons event handlers
 void bt100PopEventHandler(void *ptr) {
+  moveDobotToPos(30,30,30,0);
   Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+    suctionCupEnable(false);
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+    suctionCupEnable(true);
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+    suctionCupEnable(true);
+  }
+  
+  
 }
 
 void bt101PopEventHandler(void *ptr) {
   Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
+  moveIncrement = 0.1;
+  if (bt101PrevState == 1) {  //previously enabled
+    bt101CurrState = 1;
+    bt101PrevState = 0;
+  } else if (bt101PrevState == 0) {  //previously disabled
+    bt101CurrState = 0;
+    bt101PrevState = 1;
+  } else if (bt101PrevState == -1) {  //not clicked before
+    bt101CurrState = 1;
+    bt101PrevState = 0;
+  }
 }
 
 void bt102PopEventHandler(void *ptr) {
   Serial.println("button bt102 (movement increment 1 | [1]) pressed");
+  moveIncrement = 1.0;
+  if (bt102PrevState == 1) {  //previously enabled
+    bt102CurrState = 1;
+    bt102PrevState = 0;
+  } else if (bt102PrevState == 0) {  //previously disabled
+    bt102CurrState = 0;
+    bt102PrevState = 1;
+  } else if (bt102PrevState == -1) {  //not clicked before
+    bt102CurrState = 1;
+    bt102PrevState = 0;
+  }
 }
 
 void bt103PopEventHandler(void *ptr) {
   Serial.println("button bt103 (movement increment 10 | [10]) pressed");
+  moveIncrement = 10.0;
+  if (bt103PrevState == 1) {  //previously enabled
+    bt103CurrState = 1;
+    bt103PrevState = 0;
+  } else if (bt103PrevState == 0) {  //previously disabled
+    bt103CurrState = 0;
+    bt103PrevState = 1;
+  } else if (bt103PrevState == -1) {  //not clicked before
+    bt103CurrState = 1;
+    bt103PrevState = 0;
+  }
 }
 
 void bt104PopEventHandler(void *ptr) {
   Serial.println("button bt104 (movement increment 50 | [50]) pressed");
+  moveIncrement = 50.0;
+  if (bt104PrevState == 1) {  //previously enabled
+    bt104CurrState = 1;
+    bt104PrevState = 0;
+  } else if (bt104PrevState == 0) {  //previously disabled
+    bt104CurrState = 0;
+    bt104PrevState = 1;
+  } else if (bt104PrevState == -1) {  //not clicked before
+    bt104CurrState = 1;
+    bt104PrevState = 0;
+  }
 }
 
 void bt300PopEventHandler(void *ptr) {
   Serial.println("button bt300 (activates route 1| [Activate Route 1]) pressed");
+  if (bt300PrevState == 1) {  //previously enabled
+    bt300CurrState = 1;
+    bt300PrevState = 0;
+  } else if (bt300PrevState == 0) {  //previously disabled
+    bt300CurrState = 0;
+    bt300PrevState = 1;
+  } else if (bt300PrevState == -1) {  //not clicked before
+    bt300CurrState = 1;
+    bt300PrevState = 0;
+  }
 }
 
 void bt301PopEventHandler(void *ptr) {
   Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt302PopEventHandler(void *ptr) {
   Serial.println("button bt302 (activates route 3| [Activate Route 3]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt303PopEventHandler(void *ptr) {
   Serial.println("button bt303 (activates route 4| [Activate Route 3]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt304PopEventHandler(void *ptr) {
   Serial.println("button bt304 (activates sensor detect mode on route 1| [Activate On Sensor Detect]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt305PopEventHandler(void *ptr) {
   Serial.println("button bt305 (activates sensor detect mode on route 2| [Activate On Sensor Detect]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt306PopEventHandler(void *ptr) {
   Serial.println("button bt306 (activates sensor detect mode on route 3| [Activate On Sensor Detect]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt307PopEventHandler(void *ptr) {
   Serial.println("button bt307 (activates sensor detect mode on route 4| [Activate On Sensor Detect]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt308PopEventHandler(void *ptr) {
   Serial.println("button bt308 (activates repeat mode on route 1| [Activate On Repeat]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt309PopEventHandler(void *ptr) {
   Serial.println("button bt309 (activates repeat mode on route 2| [Activate On Repeat]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt310PopEventHandler(void *ptr) {
   Serial.println("button bt310 (activates repeat mode on route 3| [Activate On Repeat]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 void bt311PopEventHandler(void *ptr) {
   Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
+  if (bt100PrevState == 1) {  //previously enabled
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  } else if (bt100PrevState == 0) {  //previously disabled
+    bt100CurrState = 0;
+    bt100PrevState = 1;
+  } else if (bt100PrevState == -1) {  //not clicked before
+    bt100CurrState = 1;
+    bt100PrevState = 0;
+  }
 }
 
 /*********************************************************************************************************
@@ -807,7 +1045,6 @@ void suctionCupEnable(bool suctionEnable) {
   }
   ProtocolProcess();
   Serial.println("function suctionCupEnable() called");
-  delay(10000);
 }
 /*********************************************************************************************************
 ** Function name:       InitRAM
@@ -872,7 +1109,7 @@ void InitRAM(void) {
 void loop() {
   cmdQueue cmdsQueue;
   Serial.println("initialize loop");
-  int params[4] = { 1760, 290, 3650, 9999 };
+  /*int params[4] = { 1760, 290, 3650, 9999 };
   int params2[4] = { 100, 200, 9999, 9999 };
   int params3[4] = { 1000, 2000, 3000, 4000 };
   int params4[4] = { 8675, 34, 645, 9999 };
@@ -900,7 +1137,7 @@ void loop() {
     Serial.print(output[i]);
     Serial.print(", ");
   }
-  cmdsQueue.printQueue();
+  cmdsQueue.printQueue();*/
 
   //cmdsQueue.addToQueue(3, params, 4);
   //cmdsQueue.addToQueue(3, params, 4);
