@@ -64,56 +64,23 @@ bool suctionCurrentlyOn = false;
 float moveIncrement = 0.0;
 int currentPage = 1;
 //dual state button states
-int bt100CurrState = -1;
-int bt100PrevState = -1;
-
-int bt101CurrState = -1;
-int bt101PrevState = -1;
-
-int bt102CurrState = -1;
-int bt102PrevState = -1;
-
-int bt103CurrState = -1;
-int bt103PrevState = -1;
-
-int bt104CurrState = -1;
-int bt104PrevState = -1;
-
-int bt300CurrState = -1;
-int bt300PrevState = -1;
-
-int bt301CurrState = -1;
-int bt301PrevState = -1;
-
-int bt302CurrState = -1;
-int bt302PrevState = -1;
-
-int bt303CurrState = -1;
-int bt303PrevState = -1;
-
-int bt304CurrState = -1;
-int bt304PrevState = -1;
-
-int bt305CurrState = -1;
-int bt305PrevState = -1;
-
-int bt306CurrState = -1;
-int bt306PrevState = -1;
-
-int bt307CurrState = -1;
-int bt307PrevState = -1;
-
-int bt308CurrState = -1;
-int bt308PrevState = -1;
-
-int bt309CurrState = -1;
-int bt309PrevState = -1;
-
-int bt310CurrState = -1;
-int bt310PrevState = -1;
-
-int bt311CurrState = -1;
-int bt311PrevState = -1;
+int bt100State = -1;
+int bt101State = -1;
+int bt102State = -1;
+int bt103State = -1;
+int bt104State = -1;
+int bt300State = -1;
+int bt301State = -1;
+int bt302State = -1;
+int bt303State = -1;
+int bt304State = -1;
+int bt305State = -1;
+int bt306State = -1;
+int bt307State = -1;
+int bt308State = -1;
+int bt309State = -1;
+int bt310State = -1;
+int bt311State = -1;
 
 
 
@@ -392,251 +359,200 @@ void b409PopEventHandler(void *ptr) {
 }
 
 //dual-state buttons event handlers
+
+//output port not working correctly
 void bt100PopEventHandler(void *ptr) {
-  moveDobotToPos(30,30,30,0);
+  //moveDobotToPos(30,30,30,0);
   Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-    suctionCupEnable(false);
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-    suctionCupEnable(true);
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-    suctionCupEnable(true);
+  if (bt100State == 1) {  //previously enabled
+    bt100State = 0;
+    //suctionCupEnable(false);
+  } else if (bt100State == 0) {  //previously disabled
+    bt100State = 1;
+    //suctionCupEnable(true);
+  } else if (bt100State == -1) {  //not clicked before
+    bt100State = 1;
+    //suctionCupEnable(true);
   }
-  
-  
 }
 
 void bt101PopEventHandler(void *ptr) {
   Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
   moveIncrement = 0.1;
-  if (bt101PrevState == 1) {  //previously enabled
-    bt101CurrState = 1;
-    bt101PrevState = 0;
-  } else if (bt101PrevState == 0) {  //previously disabled
-    bt101CurrState = 0;
-    bt101PrevState = 1;
-  } else if (bt101PrevState == -1) {  //not clicked before
-    bt101CurrState = 1;
-    bt101PrevState = 0;
+  if (bt101State == 0) {  //previously enabled
+    bt101State = 1;
+  } else if (bt101State == 1) {  //previously disabled
+    bt101State = 0;
+  } else if (bt101State == -1) {  //not clicked before
+    bt101State = 1;
   }
 }
 
 void bt102PopEventHandler(void *ptr) {
   Serial.println("button bt102 (movement increment 1 | [1]) pressed");
   moveIncrement = 1.0;
-  if (bt102PrevState == 1) {  //previously enabled
-    bt102CurrState = 1;
-    bt102PrevState = 0;
-  } else if (bt102PrevState == 0) {  //previously disabled
-    bt102CurrState = 0;
-    bt102PrevState = 1;
-  } else if (bt102PrevState == -1) {  //not clicked before
-    bt102CurrState = 1;
-    bt102PrevState = 0;
+  if (bt102State == 0) {  //previously enabled
+    bt102State = 1;
+  } else if (bt102State == 1) {  //previously disabled
+    bt102State = 0;
+  } else if (bt102State == -1) {  //not clicked before
+    bt102State = 1;
   }
 }
 
 void bt103PopEventHandler(void *ptr) {
   Serial.println("button bt103 (movement increment 10 | [10]) pressed");
   moveIncrement = 10.0;
-  if (bt103PrevState == 1) {  //previously enabled
-    bt103CurrState = 1;
-    bt103PrevState = 0;
-  } else if (bt103PrevState == 0) {  //previously disabled
-    bt103CurrState = 0;
-    bt103PrevState = 1;
-  } else if (bt103PrevState == -1) {  //not clicked before
-    bt103CurrState = 1;
-    bt103PrevState = 0;
+  if (bt103State == 0) {  //previously enabled
+    bt103State = 1;
+  } else if (bt103State == 1) {  //previously disabled
+    bt103State = 0;
+  } else if (bt103State == -1) {  //not clicked before
+    bt103State = 1;
   }
 }
 
 void bt104PopEventHandler(void *ptr) {
   Serial.println("button bt104 (movement increment 50 | [50]) pressed");
   moveIncrement = 50.0;
-  if (bt104PrevState == 1) {  //previously enabled
-    bt104CurrState = 1;
-    bt104PrevState = 0;
-  } else if (bt104PrevState == 0) {  //previously disabled
-    bt104CurrState = 0;
-    bt104PrevState = 1;
-  } else if (bt104PrevState == -1) {  //not clicked before
-    bt104CurrState = 1;
-    bt104PrevState = 0;
+  if (bt104State == 0) {  //previously enabled
+    bt104State = 1;
+  } else if (bt104State == 1) {  //previously disabled
+    bt104State = 0;
+  } else if (bt104State == -1) {  //not clicked before
+    bt104State = 1;
   }
 }
 
 void bt300PopEventHandler(void *ptr) {
   Serial.println("button bt300 (activates route 1| [Activate Route 1]) pressed");
-  if (bt300PrevState == 1) {  //previously enabled
-    bt300CurrState = 1;
-    bt300PrevState = 0;
-  } else if (bt300PrevState == 0) {  //previously disabled
-    bt300CurrState = 0;
-    bt300PrevState = 1;
-  } else if (bt300PrevState == -1) {  //not clicked before
-    bt300CurrState = 1;
-    bt300PrevState = 0;
+  if (bt301State == 0) {  //previously enabled
+    bt301State = 1;
+  } else if (bt301State == 1) {  //previously disabled
+    bt301State = 0;
+  } else if (bt301State == -1) {  //not clicked before
+    bt301State = 1;
   }
 }
 
 void bt301PopEventHandler(void *ptr) {
   Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt302State == 0) {  //previously enabled
+    bt302State = 1;
+  } else if (bt302State == 1) {  //previously disabled
+    bt302State = 0;
+  } else if (bt302State == -1) {  //not clicked before
+    bt302State = 1;
   }
 }
 
 void bt302PopEventHandler(void *ptr) {
   Serial.println("button bt302 (activates route 3| [Activate Route 3]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt303State == 0) {  //previously enabled
+    bt303State = 1;
+  } else if (bt303State == 1) {  //previously disabled
+    bt303State = 0;
+  } else if (bt303State == -1) {  //not clicked before
+    bt303State = 1;
   }
 }
 
 void bt303PopEventHandler(void *ptr) {
   Serial.println("button bt303 (activates route 4| [Activate Route 3]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt304State == 0) {  //previously enabled
+    bt304State = 1;
+  } else if (bt304State == 1) {  //previously disabled
+    bt304State = 0;
+  } else if (bt304State == -1) {  //not clicked before
+    bt304State = 1;
   }
 }
 
 void bt304PopEventHandler(void *ptr) {
   Serial.println("button bt304 (activates sensor detect mode on route 1| [Activate On Sensor Detect]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt305State == 0) {  //previously enabled
+    bt305State = 1;
+  } else if (bt305State == 1) {  //previously disabled
+    bt305State = 0;
+  } else if (bt305State == -1) {  //not clicked before
+    bt305State = 1;
   }
 }
 
 void bt305PopEventHandler(void *ptr) {
   Serial.println("button bt305 (activates sensor detect mode on route 2| [Activate On Sensor Detect]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt306State == 0) {  //previously enabled
+    bt306State = 1;
+  } else if (bt306State == 1) {  //previously disabled
+    bt306State = 0;
+  } else if (bt306State == -1) {  //not clicked before
+    bt306State = 1;
   }
 }
 
 void bt306PopEventHandler(void *ptr) {
   Serial.println("button bt306 (activates sensor detect mode on route 3| [Activate On Sensor Detect]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt306State == 0) {  //previously enabled
+    bt306State = 1;
+  } else if (bt306State == 1) {  //previously disabled
+    bt306State = 0;
+  } else if (bt306State == -1) {  //not clicked before
+    bt306State = 1;
   }
 }
 
 void bt307PopEventHandler(void *ptr) {
   Serial.println("button bt307 (activates sensor detect mode on route 4| [Activate On Sensor Detect]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt307State == 0) {  //previously enabled
+    bt307State = 1;
+  } else if (bt307State == 1) {  //previously disabled
+    bt307State = 0;
+  } else if (bt307State == -1) {  //not clicked before
+    bt307State = 1;
   }
 }
 
 void bt308PopEventHandler(void *ptr) {
   Serial.println("button bt308 (activates repeat mode on route 1| [Activate On Repeat]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt308State == 0) {  //previously enabled
+    bt308State = 1;
+  } else if (bt308State == 1) {  //previously disabled
+    bt308State = 0;
+  } else if (bt308State == -1) {  //not clicked before
+    bt308 State = 1;
   }
 }
 
 void bt309PopEventHandler(void *ptr) {
   Serial.println("button bt309 (activates repeat mode on route 2| [Activate On Repeat]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt309State == 0) {  //previously enabled
+    bt309State = 1;
+  } else if (bt309State == 1) {  //previously disabled
+    bt309State = 0;
+  } else if (bt309State == -1) {  //not clicked before
+    bt309State = 1;
   }
 }
 
 void bt310PopEventHandler(void *ptr) {
   Serial.println("button bt310 (activates repeat mode on route 3| [Activate On Repeat]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt310State == 0) {  //previously enabled
+    bt310State = 1;
+  } else if (bt310State == 1) {  //previously disabled
+    bt310State = 0;
+  } else if (bt310State == -1) {  //not clicked before
+    bt310State = 1;
   }
 }
 
 void bt311PopEventHandler(void *ptr) {
   Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
-  if (bt100PrevState == 1) {  //previously enabled
-    bt100CurrState = 1;
-    bt100PrevState = 0;
-  } else if (bt100PrevState == 0) {  //previously disabled
-    bt100CurrState = 0;
-    bt100PrevState = 1;
-  } else if (bt100PrevState == -1) {  //not clicked before
-    bt100CurrState = 1;
-    bt100PrevState = 0;
+  if (bt311State == 0) {  //previously enabled
+    bt311State = 1;
+  } else if (bt311State == 1) {  //previously disabled
+    bt311State = 0;
+  } else if (bt311State == -1) {  //not clicked before
+    bt311State = 1;
   }
 }
 
@@ -1082,7 +998,6 @@ void InitRAM(void) {
 
 
 
-  //Set PTP Model
   gPTPCoordinateParams.xyzVelocity = 100;
   gPTPCoordinateParams.rVelocity = 100;
   gPTPCoordinateParams.xyzAcceleration = 80;
@@ -1092,9 +1007,12 @@ void InitRAM(void) {
   gPTPCommonParams.accelerationRatio = 50;
 
   gPTPCmd.ptpMode = MOVL_XYZ;
-  gQueuedCmdIndex = 0;
+  gPTPCmd.x = 0;
+  gPTPCmd.y = 0;
+  gPTPCmd.z = 0;
+  gPTPCmd.r = 0;
 
-  ProtocolProcess();
+  gQueuedCmdIndex = 0;
 }
 
 /*********************************************************************************************************
@@ -1107,6 +1025,12 @@ void InitRAM(void) {
 *********************************************************************************************************/
 
 void loop() {
+  InitRAM();
+
+  ProtocolInit();
+  SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
+  SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
+  SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
   cmdQueue cmdsQueue;
   Serial.println("initialize loop");
   /*int params[4] = { 1760, 290, 3650, 9999 };
