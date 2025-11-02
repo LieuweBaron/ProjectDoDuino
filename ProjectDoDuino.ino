@@ -26,20 +26,20 @@
 #define SERIAL_TX_BUFFER_SIZE 64
 #define SERIAL_RX_BUFFER_SIZE 256
 
-//#define JOG_STICK 
+//#define JOG_STICK
 /*********************************************************************************************************
 ** Global parameters
 *********************************************************************************************************/
 EndEffectorParams gEndEffectorParams;
 
-JOGJointParams  gJOGJointParams;
+JOGJointParams gJOGJointParams;
 JOGCoordinateParams gJOGCoordinateParams;
 JOGCommonParams gJOGCommonParams;
-JOGCmd          gJOGCmd;
+JOGCmd gJOGCmd;
 
 PTPCoordinateParams gPTPCoordinateParams;
 PTPCommonParams gPTPCommonParams;
-PTPCmd          gPTPCmd;
+PTPCmd gPTPCmd;
 
 uint64_t gQueuedCmdIndex;
 int currentMillis = 0;
@@ -47,15 +47,15 @@ int dynamicDelayMillis = 0;
 int staticDelayMillis = 0;
 int queueSize = 5;
 //start position of the dobot, based on cartesian coordinates
-float startX = 200.00;
-float startY = 0.00;
-float startZ = 0.00;
-float startR = 0.00;
+float homeX = 163.00;
+float homeY = -85.00;
+float homeZ = -62.00;
+float homeR = 0.00;
 //current position of the dobot, updated on chance, based on cartesian coordinates
-float currentX = startX;
-float currentY = startY;
-float currentZ = startZ;
-float currentR = startR;
+float currentX = homeX;
+float currentY = homeY;
+float currentZ = homeZ;
+float currentR = homeR;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
@@ -80,6 +80,8 @@ int bt308State = -1;
 int bt309State = -1;
 int bt310State = -1;
 int bt311State = -1;
+
+String displayText = "...";
 //pages on nextion screen
 NexPage page1 = NexPage(0, 0, "page0");  //page 0, reffered to as page 1, Controls page
 NexPage page2 = NexPage(1, 0, "page1");  //page 1, reffered to as page 2, Routes page
@@ -249,27 +251,41 @@ void b100PopEventHandler(void *ptr) {
   Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
   gPTPCmd.x += moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 
 void b101PopEventHandler(void *ptr) {
   Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
   gPTPCmd.x -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 
 void b102PopEventHandler(void *ptr) {
   Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
+  gPTPCmd.y += moveIncrement;
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 
 void b103PopEventHandler(void *ptr) {
   Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
+  gPTPCmd.y -= moveIncrement;
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 
 void b104PopEventHandler(void *ptr) {
   Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
+  gPTPCmd.z += moveIncrement;
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 void b105PopEventHandler(void *ptr) {
   Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
+  gPTPCmd.z -= moveIncrement;
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  updateScreen();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -437,14 +453,14 @@ void bt311PopEventHandler(void *ptr) {
 ** Returned value:      none
 *********************************************************************************************************/
 void setup() {
-    Serial.begin(115200);
-    Serial1.begin(115200); 
-    Serial2.begin(9600); 
-    printf_begin();
-    //Set Timer Interrupt
-    FlexiTimer2::set(100,Serialread); 
-    FlexiTimer2::start();
-    page1.attachPush(page1PushEventHandler);
+  Serial.begin(115200);
+  Serial1.begin(115200);
+  Serial2.begin(9600);
+  printf_begin();
+  //Set Timer Interrupt
+  FlexiTimer2::set(100, Serialread);
+  FlexiTimer2::start();
+  page1.attachPush(page1PushEventHandler);
   page2.attachPush(page2PushEventHandler);
   page3.attachPush(page3PushEventHandler);
   page4.attachPush(page4PushEventHandler);
@@ -494,7 +510,11 @@ void setup() {
   bt309.attachPop(bt309PopEventHandler, &bt309);
   bt310.attachPop(bt310PopEventHandler, &bt310);
   bt311.attachPop(bt311PopEventHandler, &bt311);
+  updateScreen();
+}
 
+void moveArm() {
+  
 }
 
 /*********************************************************************************************************
@@ -504,13 +524,12 @@ void setup() {
 ** Output parameters:   
 ** Returned value:      
 *********************************************************************************************************/
-void Serialread()
-{
-  while(Serial1.available()) {
-        uint8_t data = Serial1.read();
-        if (RingBufferIsFull(&gSerialProtocolHandler.rxRawByteQueue) == false) {
-            RingBufferEnqueue(&gSerialProtocolHandler.rxRawByteQueue, &data);
-        }
+void Serialread() {
+  while (Serial1.available()) {
+    uint8_t data = Serial1.read();
+    if (RingBufferIsFull(&gSerialProtocolHandler.rxRawByteQueue) == false) {
+      RingBufferEnqueue(&gSerialProtocolHandler.rxRawByteQueue, &data);
+    }
   }
 }
 /*********************************************************************************************************
@@ -520,10 +539,9 @@ void Serialread()
 ** Output parameters:   
 ** Returned value:      
 *********************************************************************************************************/
-int Serial_putc( char c, struct __file * )
-{
-    Serial.write( c );
-    return c;
+int Serial_putc(char c, struct __file *) {
+  Serial.write(c);
+  return c;
 }
 
 /*********************************************************************************************************
@@ -533,9 +551,8 @@ int Serial_putc( char c, struct __file * )
 ** Output parameters:
 ** Returned value:      
 *********************************************************************************************************/
-void printf_begin(void)
-{
-    fdevopen( &Serial_putc, 0 );
+void printf_begin(void) {
+  fdevopen(&Serial_putc, 0);
 }
 
 /*********************************************************************************************************
@@ -545,53 +562,72 @@ void printf_begin(void)
 ** Output parameters:   none
 ** Returned value:      none
 *********************************************************************************************************/
-void InitRAM(void)
-{
-    //Set JOG Model
-    gJOGJointParams.velocity[0] = 100;
-    gJOGJointParams.velocity[1] = 100;
-    gJOGJointParams.velocity[2] = 100;
-    gJOGJointParams.velocity[3] = 100;
-    gJOGJointParams.acceleration[0] = 80;
-    gJOGJointParams.acceleration[1] = 80;
-    gJOGJointParams.acceleration[2] = 80;
-    gJOGJointParams.acceleration[3] = 80;
+void InitRAM(void) {
+  //Set JOG Model
+  gJOGJointParams.velocity[0] = 100;
+  gJOGJointParams.velocity[1] = 100;
+  gJOGJointParams.velocity[2] = 100;
+  gJOGJointParams.velocity[3] = 100;
+  gJOGJointParams.acceleration[0] = 80;
+  gJOGJointParams.acceleration[1] = 80;
+  gJOGJointParams.acceleration[2] = 80;
+  gJOGJointParams.acceleration[3] = 80;
 
-    gJOGCoordinateParams.velocity[0] = 100;
-    gJOGCoordinateParams.velocity[1] = 100;
-    gJOGCoordinateParams.velocity[2] = 100;
-    gJOGCoordinateParams.velocity[3] = 100;
-    gJOGCoordinateParams.acceleration[0] = 80;
-    gJOGCoordinateParams.acceleration[1] = 80;
-    gJOGCoordinateParams.acceleration[2] = 80;
-    gJOGCoordinateParams.acceleration[3] = 80;
+  gJOGCoordinateParams.velocity[0] = 100;
+  gJOGCoordinateParams.velocity[1] = 100;
+  gJOGCoordinateParams.velocity[2] = 100;
+  gJOGCoordinateParams.velocity[3] = 100;
+  gJOGCoordinateParams.acceleration[0] = 80;
+  gJOGCoordinateParams.acceleration[1] = 80;
+  gJOGCoordinateParams.acceleration[2] = 80;
+  gJOGCoordinateParams.acceleration[3] = 80;
 
-    gJOGCommonParams.velocityRatio = 50;
-    gJOGCommonParams.accelerationRatio = 50;
-   
-    gJOGCmd.cmd = AP_DOWN;
-    gJOGCmd.isJoint = JOINT_MODEL;
+  gJOGCommonParams.velocityRatio = 50;
+  gJOGCommonParams.accelerationRatio = 50;
 
-    
+  gJOGCmd.cmd = AP_DOWN;
+  gJOGCmd.isJoint = JOINT_MODEL;
 
-    //Set PTP Model
-    gPTPCoordinateParams.xyzVelocity = 100;
-    gPTPCoordinateParams.rVelocity = 100;
-    gPTPCoordinateParams.xyzAcceleration = 80;
-    gPTPCoordinateParams.rAcceleration = 80;
 
-    gPTPCommonParams.velocityRatio = 50;
-    gPTPCommonParams.accelerationRatio = 50;
 
-    gPTPCmd.ptpMode = MOVL_XYZ;
-    gPTPCmd.x = 200;
-    gPTPCmd.y = 0;
-    gPTPCmd.z = 0;
-    gPTPCmd.r = 0;
+  //Set PTP Model
+  gPTPCoordinateParams.xyzVelocity = 100;
+  gPTPCoordinateParams.rVelocity = 100;
+  gPTPCoordinateParams.xyzAcceleration = 80;
+  gPTPCoordinateParams.rAcceleration = 80;
 
-    gQueuedCmdIndex = 0;
+  gPTPCommonParams.velocityRatio = 50;
+  gPTPCommonParams.accelerationRatio = 50;
 
-    
+  gPTPCmd.ptpMode = MOVL_XYZ;
+  gPTPCmd.x = 163;
+  gPTPCmd.y = -85;
+  gPTPCmd.z = -62;
+  //gPTPCmd.r = 0;
+
+  gQueuedCmdIndex = 0;
+}
+void updateScreen() {
+  if (currentPage == 1) {
+    displayText = String((gPTPCmd.x), 1);
+    t100.setText(displayText.c_str());
+    t101.setText("...");
+    t102.setText("...");
+    displayText = String((gPTPCmd.y), 1);
+    t103.setText(displayText.c_str());
+    t104.setText("...");
+    t105.setText("...");
+    displayText = String((gPTPCmd.z), 1);
+    t106.setText(displayText.c_str());
+    t107.setText("...");
+    t108.setText("...");
+
+  } else if (currentPage == 2) {
+
+  } else if (currentPage == 3) {
+
+  } else if (currentPage == 4) {
+  }
 }
 
 /*********************************************************************************************************
@@ -602,75 +638,23 @@ void InitRAM(void)
 ** Returned value:      none
 *********************************************************************************************************/
 
-void loop() 
-{
-    InitRAM();
+void loop() {
+  delay(1000);
+  InitRAM();
 
-    ProtocolInit();
-    
-    SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
-    
-    SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
-    
-    SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-    
-    printf("\r\n======Enter demo application======\r\n");
-    
-    SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-    for(; ;)
-    {
-      nexLoop(nex_listen_list);
-      //Serial.println("test serial connection");
-        static uint32_t timer = millis();
-        static uint32_t count = 0;
-        #ifdef JOG_STICK
-        if(millis() - timer > 1000)
-        {
-            timer = millis();
-            count++;
-            switch(count){
-                case 1:
-                    gJOGCmd.cmd = AP_DOWN;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 2:
-                    gJOGCmd.cmd = IDEL;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 3:
-                    gJOGCmd.cmd = AN_DOWN;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                case 4:
-                    gJOGCmd.cmd = IDEL;
-                    gJOGCmd.isJoint = JOINT_MODEL;
-                    SetJOGCmd(&gJOGCmd, true, &gQueuedCmdIndex);
-                    break;
-                default:
-                    count = 0;
-                    break;
-              }
-        }
-        #else
-        if(millis() - timer > 3000)
-        {
-            timer = millis();
-            count++;
-            if(count & 0x01)
-            {
-                //gPTPCmd.x += 100;
-                //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            }
-            else
-            {
-                //gPTPCmd.x -= 100;
-                //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            }
-        }
-        #endif
-        ProtocolProcess();
-    }
-}   
+  ProtocolInit();
+
+  SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
+
+  SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
+
+  SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
+
+  printf("\r\n======Enter demo application======\r\n");
+
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  for (;;) {
+    nexLoop(nex_listen_list);
+    ProtocolProcess();
+  }
+}
