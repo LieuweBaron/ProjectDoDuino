@@ -259,6 +259,7 @@ void b101PopEventHandler(void *ptr) {
   gPTPCmd.x -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   updateScreen();
+  //Serial.println(gPTPCmd.x);
 }
 
 void b102PopEventHandler(void *ptr) {
@@ -266,6 +267,8 @@ void b102PopEventHandler(void *ptr) {
   gPTPCmd.y += moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   updateScreen();
+  //Serial.println(gPTPCmd.y);
+
 }
 
 void b103PopEventHandler(void *ptr) {
@@ -273,6 +276,7 @@ void b103PopEventHandler(void *ptr) {
   gPTPCmd.y -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   updateScreen();
+  //Serial.println(gPTPCmd.z);
 }
 
 void b104PopEventHandler(void *ptr) {
@@ -513,9 +517,6 @@ void setup() {
   updateScreen();
 }
 
-void moveArm() {
-  
-}
 
 /*********************************************************************************************************
 ** Function name:       Serialread
@@ -600,24 +601,22 @@ void InitRAM(void) {
   gPTPCommonParams.accelerationRatio = 50;
 
   gPTPCmd.ptpMode = MOVL_XYZ;
-  gPTPCmd.x = 163;
-  gPTPCmd.y = -85;
-  gPTPCmd.z = -62;
-  //gPTPCmd.r = 0;
-
   gQueuedCmdIndex = 0;
 }
 void updateScreen() {
   if (currentPage == 1) {
     displayText = String((gPTPCmd.x), 1);
+    Serial.println(displayText.c_str());
     t100.setText(displayText.c_str());
     t101.setText("...");
     t102.setText("...");
     displayText = String((gPTPCmd.y), 1);
+    Serial.println(displayText.c_str());
     t103.setText(displayText.c_str());
     t104.setText("...");
     t105.setText("...");
     displayText = String((gPTPCmd.z), 1);
+    Serial.println(displayText.c_str());
     t106.setText(displayText.c_str());
     t107.setText("...");
     t108.setText("...");
@@ -652,7 +651,7 @@ void loop() {
 
   printf("\r\n======Enter demo application======\r\n");
 
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   for (;;) {
     nexLoop(nex_listen_list);
     ProtocolProcess();
