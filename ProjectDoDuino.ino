@@ -16,11 +16,11 @@
 ** Descriptions:        Modified,From DobotDemoForSTM32
 **--------------------------------------------------------------------------------------------------------
 *********************************************************************************************************/
-#include <Nextion.h>
 #include "stdio.h"
 #include "Protocol.h"
 #include "command.h"
 #include "FlexiTimer2.h"
+#include <Nextion.h>
 
 //Set Serial TX&RX Buffer Size
 #define SERIAL_TX_BUFFER_SIZE 64
@@ -46,16 +46,6 @@ int currentMillis = 0;
 int dynamicDelayMillis = 0;
 int staticDelayMillis = 0;
 int queueSize = 5;
-//start position of the dobot, based on cartesian coordinates
-float homeX = 163.00;
-float homeY = -85.00;
-float homeZ = -62.00;
-float homeR = 0.00;
-//current position of the dobot, updated on chance, based on cartesian coordinates
-float currentX = homeX;
-float currentY = homeY;
-float currentZ = homeZ;
-float currentR = homeR;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
@@ -251,14 +241,14 @@ void b100PopEventHandler(void *ptr) {
   Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
   gPTPCmd.x += moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
 }
 
 void b101PopEventHandler(void *ptr) {
   Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
   gPTPCmd.x -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
   //Serial.println(gPTPCmd.x);
 }
 
@@ -266,16 +256,15 @@ void b102PopEventHandler(void *ptr) {
   Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
   gPTPCmd.y += moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
   //Serial.println(gPTPCmd.y);
-
 }
 
 void b103PopEventHandler(void *ptr) {
   Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
   gPTPCmd.y -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
   //Serial.println(gPTPCmd.z);
 }
 
@@ -283,13 +272,13 @@ void b104PopEventHandler(void *ptr) {
   Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
   gPTPCmd.z += moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
 }
 void b105PopEventHandler(void *ptr) {
   Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
   gPTPCmd.z -= moveIncrement;
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  updateScreen();
+  //updateScreen();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -378,12 +367,24 @@ void b409PopEventHandler(void *ptr) {
 
 //dual-state buttons event handlers
 void bt100PopEventHandler(void *ptr) {
+  uint32_t dual_state;
+  bt100.getValue(&dual_state);
+  if(dual_state) {
+      suck(true);
+  } else {
+      suck(false);
+  }
   Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
 }
 
 void bt101PopEventHandler(void *ptr) {
   Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
   moveIncrement = 0.1;
+  gPTPCmd.x = 180;
+  gPTPCmd.y = 0;
+  gPTPCmd.z = 0;
+  gPTPCmd.r = 0;
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
 }
 
 void bt102PopEventHandler(void *ptr) {
@@ -447,6 +448,32 @@ void bt310PopEventHandler(void *ptr) {
 
 void bt311PopEventHandler(void *ptr) {
   Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
+}
+
+void updateScreen() {
+  if (currentPage == 1) {
+    displayText = String((gPTPCmd.x), 1);
+    Serial.println(displayText.c_str());
+    t100.setText(displayText.c_str());
+    t101.setText("...");
+    t102.setText("...");
+    displayText = String((gPTPCmd.y), 1);
+    Serial.println(displayText.c_str());
+    t103.setText(displayText.c_str());
+    t104.setText("...");
+    t105.setText("...");
+    displayText = String((gPTPCmd.z), 1);
+    Serial.println(displayText.c_str());
+    t106.setText(displayText.c_str());
+    t107.setText("...");
+    t108.setText("...");
+
+  } else if (currentPage == 2) {
+
+  } else if (currentPage == 3) {
+
+  } else if (currentPage == 4) {
+  }
 }
 
 /*********************************************************************************************************
@@ -514,9 +541,8 @@ void setup() {
   bt309.attachPop(bt309PopEventHandler, &bt309);
   bt310.attachPop(bt310PopEventHandler, &bt310);
   bt311.attachPop(bt311PopEventHandler, &bt311);
-  updateScreen();
+  //updateScreen();
 }
-
 
 /*********************************************************************************************************
 ** Function name:       Serialread
@@ -601,31 +627,19 @@ void InitRAM(void) {
   gPTPCommonParams.accelerationRatio = 50;
 
   gPTPCmd.ptpMode = MOVL_XYZ;
+  gPTPCmd.x = 180;
+  gPTPCmd.y = 0;
+  gPTPCmd.z = 0;
+  gPTPCmd.r = 0;
+
   gQueuedCmdIndex = 0;
 }
-void updateScreen() {
-  if (currentPage == 1) {
-    displayText = String((gPTPCmd.x), 1);
-    Serial.println(displayText.c_str());
-    t100.setText(displayText.c_str());
-    t101.setText("...");
-    t102.setText("...");
-    displayText = String((gPTPCmd.y), 1);
-    Serial.println(displayText.c_str());
-    t103.setText(displayText.c_str());
-    t104.setText("...");
-    t105.setText("...");
-    displayText = String((gPTPCmd.z), 1);
-    Serial.println(displayText.c_str());
-    t106.setText(displayText.c_str());
-    t107.setText("...");
-    t108.setText("...");
 
-  } else if (currentPage == 2) {
-
-  } else if (currentPage == 3) {
-
-  } else if (currentPage == 4) {
+void suck(bool suckIt) {
+  if(suckIt == true) {
+    SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+  } else if(suckIt == false) {
+    SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
   }
 }
 
@@ -638,22 +652,21 @@ void updateScreen() {
 *********************************************************************************************************/
 
 void loop() {
-  delay(1000);
   InitRAM();
-
   ProtocolInit();
-
   SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
-
   SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
-
   SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-
   printf("\r\n======Enter demo application======\r\n");
+  int count = 0;
+  //set the starting position after 3 seconds of the code starting
+  delay(3000);
+  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
 
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   for (;;) {
     nexLoop(nex_listen_list);
+    static uint32_t timer = millis();
+    static uint32_t count = 0;
     ProtocolProcess();
   }
 }
