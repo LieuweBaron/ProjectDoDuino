@@ -387,7 +387,7 @@ void b100PopEventHandler(void *ptr) {
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  queue.printQueue();
+  //queue.printQueue();
   //updateScreen();
 }
 
@@ -816,7 +816,7 @@ void loop() {
   printf("\r\n======Enter demo application======\r\n");
   int count = 0;
   //set the starting position after 3 seconds of the code starting
-  delay(5000);
+  //delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
 
@@ -827,11 +827,12 @@ void loop() {
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandRAW = queue.getNextInQueueValues();
     int nextCommand = nextCommandRAW[0];
-    //Serial.println(nextCommand);
+    //Serial.println(timer);
     if (nextCommandRAW[4] != 9999) {
-      delayTime = timer + nextCommandRAW[4];
-      nextCommandRAW[4] = 0;
-    }
+      delayTime = (timer + nextCommandRAW[4]);
+      nextCommandRAW[4] = 9999;
+    } 
+    Serial.print("timer: "); Serial.print(timer);Serial.print(" delayTime: ");Serial.println(delayTime);
     if (timer >= delayTime) {
       switch (nextCommand) {
         //command is empty
@@ -852,6 +853,6 @@ void loop() {
     }
     count++;
     ProtocolProcess();
-    //delay(1000);
+    delay(50);
   }
 }
