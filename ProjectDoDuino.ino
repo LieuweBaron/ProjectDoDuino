@@ -43,13 +43,13 @@ PTPCmd gPTPCmd;
 
 uint64_t gQueuedCmdIndex;
 int currentMillis = 0;
-int dynamicDelayMillis = 0;
-int staticDelayMillis = 0;
+int delayTime = 0;
 int queueSize = 5;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 
+uint32_t timer = 0;
 float moveIncrement = 0;
 int currentPage = 1;
 //dual state button states
@@ -272,7 +272,18 @@ public:
     }
   }
 
-  int *getNextInQueueAndRemoveIt() {
+  int getNextInQueueIndex() {
+    int nextIndex = 9999;
+    for (int i = (maxLength - 1); i >= 0; i--) {
+      if (queue[i].command != 9999) {
+        nextIndex = i;
+        break;
+      }
+    }
+    return nextIndex;
+  }
+
+  int *getNextInQueueValues() {
     int *nextInQueueValueArray = new int[5];
     for (int i = 0; i <= 5; i++) {
       nextInQueueValueArray[i] = 9999;
@@ -283,7 +294,6 @@ public:
         for (int j = 1; j <= 4; j++) {
           nextInQueueValueArray[j] = queue[i].pArray[j - 1];
         }
-        removeFromQueue(i);
         break;
       }
     }
@@ -375,8 +385,9 @@ void b100PopEventHandler(void *ptr) {
   //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
   //gPTPCmd.x += moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { moveIncrement, 0, 0, 0 };
+  int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
+  queue.printQueue();
   //updateScreen();
 }
 
@@ -384,7 +395,7 @@ void b101PopEventHandler(void *ptr) {
   //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
   //gPTPCmd.x -= moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { -moveIncrement, 0, 0, 0 };
+  int params[4] = { -moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.x);
@@ -394,7 +405,7 @@ void b102PopEventHandler(void *ptr) {
   //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
   //gPTPCmd.y += moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { 0, moveIncrement, 0, 0 };
+  int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.y);
@@ -404,7 +415,7 @@ void b103PopEventHandler(void *ptr) {
   //Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
   //gPTPCmd.y -= moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { 0, -moveIncrement, 0, 0 };
+  int params[4] = { 0, -moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.z);
@@ -414,7 +425,7 @@ void b104PopEventHandler(void *ptr) {
   //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
   //gPTPCmd.z += moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { 0, 0, moveIncrement, 0 };
+  int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
   //updateScreen();
 }
@@ -422,7 +433,7 @@ void b105PopEventHandler(void *ptr) {
   //Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
   //gPTPCmd.z -= moveIncrement;
   //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-  int params[4] = { 0, 0, -moveIncrement, 0 };
+  int params[4] = { 0, 0, -moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
   //updateScreen();
 }
@@ -811,27 +822,36 @@ void loop() {
 
   for (;;) {
     nexLoop(nex_listen_list);
-    static uint32_t timer = millis();
+    timer = millis();
     static uint32_t count = 0;
-    int *nextCommandRAW = queue.getNextInQueueAndRemoveIt();
+    int nextCommandIndex = queue.getNextInQueueIndex();
+    int *nextCommandRAW = queue.getNextInQueueValues();
     int nextCommand = nextCommandRAW[0];
-    Serial.println(nextCommand);
-    switch (nextCommand) {
-      //command is empty
-      case 9999:
-        break;
-      //this is the command to move the dobot, parameters determine to where
-      case 1001:
-        gPTPCmd.x += nextCommandRAW[1];
-        gPTPCmd.y += nextCommandRAW[2];
-        gPTPCmd.z += nextCommandRAW[3];
-        gPTPCmd.r += nextCommandRAW[4];
-        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        break;
-      case 1002:
-        break;
+    //Serial.println(nextCommand);
+    if (nextCommandRAW[4] != 9999) {
+      delayTime = timer + nextCommandRAW[4];
+      nextCommandRAW[4] = 0;
     }
+    if (timer >= delayTime) {
+      switch (nextCommand) {
+        //command is empty
+        case 9999:
+          break;
+        //this is the command to move the dobot, parameters determine to where
+        case 1001:
+          gPTPCmd.x += nextCommandRAW[1];
+          gPTPCmd.y += nextCommandRAW[2];
+          gPTPCmd.z += nextCommandRAW[3];
+          gPTPCmd.r += 0;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          break;
+        case 1002:
+          break;
+      }
+    }
+    count++;
     ProtocolProcess();
-    delay(1000);
+    //delay(1000);
   }
 }
