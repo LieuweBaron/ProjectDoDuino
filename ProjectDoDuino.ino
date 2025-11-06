@@ -216,169 +216,315 @@ NexTouch *nex_listen_list[] = {
 
   NULL
 };
+
+class node {
+public:
+  int command;
+  int pArraySize;
+  int pArray[4] = { 9999, 9999, 9999, 9999 };
+  //constructs the head
+  node() {
+    command = 9999;
+    pArraySize = 4;
+  }
+};
+
+class cmdQueue {
+  //index that decides at which location a new item has to be added to the queue
+  int addIndex;
+  //index that decides at which location a new item has to be removed from the queue
+  int removeIndex;
+  //length of the queue
+  int maxLength = 10;
+  //current length of the queue
+  int currentLength;
+  //pointer to the location of the first item in the queue
+  node queue[10];
+
+public:
+  //constuctor for queue
+  cmdQueue() {
+    addIndex = 1;
+  }
+
+  void addToQueue(int command, int p[]) {
+    if (queue[maxLength - 1].command == 9999) {
+      for (int i = (maxLength - 1); i >= 0; i--) {
+        if (i != 0) {
+          queue[i].command = queue[i - 1].command;
+          for (int j = 0; j <= 3; j++) {
+            queue[i].pArray[j] = queue[i - 1].pArray[j];
+          }
+        } else {
+          queue[i].command = command;
+          for (int j = 0; j <= 3; j++) {
+            queue[i].pArray[j] = p[j];
+          }
+        }
+      }
+    }
+  }
+
+  void removeFromQueue(int index) {
+    queue[index].command = 9999;
+    for (int j = 0; j <= 3; j++) {
+      queue[index].pArray[j] = 9999;
+    }
+  }
+
+  int *getNextInQueueAndRemoveIt() {
+    int *nextInQueueValueArray = new int[5];
+    for (int i = 0; i <= 5; i++) {
+      nextInQueueValueArray[i] = 9999;
+    }
+    for (int i = (maxLength - 1); i >= 0; i--) {
+      if (queue[i].command != 9999) {
+        nextInQueueValueArray[0] = queue[i].command;
+        for (int j = 1; j <= 4; j++) {
+          nextInQueueValueArray[j] = queue[i].pArray[j - 1];
+        }
+        removeFromQueue(i);
+        break;
+      }
+    }
+    return nextInQueueValueArray;
+  }
+
+  void compressQueue() {
+    int emptySlots[10] = { 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999 };
+    int totalEmpty = 0;
+    //find the indexes at which a slot is empty (9999)
+    for (int queueIndex = 0; queueIndex < (maxLength - 1); queueIndex++) {
+      if (queue[queueIndex].command == 9999) {
+        for (int emptySlotsIndex = 0; emptySlotsIndex < 9; emptySlotsIndex++) {
+          if (emptySlots[emptySlotsIndex] == 9999) {
+            emptySlots[emptySlotsIndex] = queueIndex;
+            totalEmpty++;
+            break;
+          }
+        }
+      }
+    }
+    //move empty slots to the back of the queue, starting with the highest index empty slot
+    //this is achieved by swapping with the next item in the queue until either the end or another empty slot (9999) is found
+    for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
+      int currentQueueIndex = emptySlots[emptySlotsIndex];
+      while (!(currentQueueIndex >= maxLength - 1) && !(queue[currentQueueIndex + 1].command == 9999)) {
+        queue[currentQueueIndex].command = queue[currentQueueIndex + 1].command;
+        queue[currentQueueIndex + 1].command = 9999;
+        for (int parameterArray = 0; parameterArray <= 3; parameterArray++) {
+          queue[currentQueueIndex].pArray[parameterArray] = queue[currentQueueIndex + 1].pArray[parameterArray];
+        }
+        currentQueueIndex++;
+      }
+    }
+  }
+
+  void printQueue() {
+    Serial.println("=================================");
+    Serial.println("Printing the Command Queue");
+    for (int i = 0; i < maxLength; i++) {
+      Serial.print("index ");
+      Serial.print(i);
+      Serial.print(": ");
+      Serial.print("Command: ");
+      Serial.print(queue[i].command);
+      Serial.print("; parameters: ");
+      Serial.print(queue[i].pArray[0]);
+      Serial.print(", ");
+      Serial.print(queue[i].pArray[1]);
+      Serial.print(", ");
+      Serial.print(queue[i].pArray[2]);
+      Serial.print(", ");
+      Serial.print(queue[i].pArray[3]);
+      Serial.println(";");
+    }
+    Serial.println("=================================");
+  }
+};
+
+cmdQueue queue;
+
 //page change event handlers
 void page1PushEventHandler(void *ptr) {
-  Serial.println("Page 1");
+  //Serial.println("Page 1");
   currentPage = 1;
 }
 
 void page2PushEventHandler(void *ptr) {
-  Serial.println("Page 2");
+  //Serial.println("Page 2");
   currentPage = 2;
 }
 void page3PushEventHandler(void *ptr) {
-  Serial.println("Page 3");
+  //Serial.println("Page 3");
   currentPage = 3;
 }
 
 void page4PushEventHandler(void *ptr) {
-  Serial.println("Page 4");
+  //Serial.println("Page 4");
   currentPage = 4;
 }
 
+/*
+commands:
+-1001: move dobot
+-1002: enable/disable suction cup
+*/
 //button event handlers
 void b100PopEventHandler(void *ptr) {
-  Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
-  gPTPCmd.x += moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
+  //gPTPCmd.x += moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { moveIncrement, 0, 0, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
 }
 
 void b101PopEventHandler(void *ptr) {
-  Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
-  gPTPCmd.x -= moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
+  //gPTPCmd.x -= moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { -moveIncrement, 0, 0, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.x);
 }
 
 void b102PopEventHandler(void *ptr) {
-  Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
-  gPTPCmd.y += moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
+  //gPTPCmd.y += moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { 0, moveIncrement, 0, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.y);
 }
 
 void b103PopEventHandler(void *ptr) {
-  Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
-  gPTPCmd.y -= moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
+  //gPTPCmd.y -= moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { 0, -moveIncrement, 0, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
   //Serial.println(gPTPCmd.z);
 }
 
 void b104PopEventHandler(void *ptr) {
-  Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
-  gPTPCmd.z += moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
+  //gPTPCmd.z += moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { 0, 0, moveIncrement, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
 }
 void b105PopEventHandler(void *ptr) {
-  Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
-  gPTPCmd.z -= moveIncrement;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  //Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
+  //gPTPCmd.z -= moveIncrement;
+  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  int params[4] = { 0, 0, -moveIncrement, 0 };
+  queue.addToQueue(1001, params);
   //updateScreen();
 }
 
 void b200PopEventHandler(void *ptr) {
-  Serial.println("button b200 (add point to trajectory | [Add Point To Trajecory]) pressed");
+  //Serial.println("button b200 (add point to trajectory | [Add Point To Trajecory]) pressed");
 }
 
 void b201PopEventHandler(void *ptr) {
-  Serial.println("button b201 (save trajectory to route 1 | [Save Route 1]) pressed");
+  //Serial.println("button b201 (save trajectory to route 1 | [Save Route 1]) pressed");
 }
 
 void b202PopEventHandler(void *ptr) {
-  Serial.println("button b202 (save trajectory to route 2 | [Save Route 2]) pressed");
+  //Serial.println("button b202 (save trajectory to route 2 | [Save Route 2]) pressed");
 }
 
 void b203PopEventHandler(void *ptr) {
-  Serial.println("button b203 (save trajectory to route 3 | [Save Route 3]) pressed");
+  //Serial.println("button b203 (save trajectory to route 3 | [Save Route 3]) pressed");
 }
 
 void b204PopEventHandler(void *ptr) {
-  Serial.println("button b204 (save trajectory to route 4 | [Save Route 4]) pressed");
+  //Serial.println("button b204 (save trajectory to route 4 | [Save Route 4]) pressed");
 }
 
 void b205PopEventHandler(void *ptr) {
-  Serial.println("button b205 (remove point 2 in trajectory | [X]) pressed");
+  //Serial.println("button b205 (remove point 2 in trajectory | [X]) pressed");
 }
 
 void b206PopEventHandler(void *ptr) {
-  Serial.println("button b206 (remove point 3 in trajectory | [X]) pressed");
+  //Serial.println("button b206 (remove point 3 in trajectory | [X]) pressed");
 }
 
 void b207PopEventHandler(void *ptr) {
-  Serial.println("button b207 (remove point 4 in trajectory | [X]) pressed");
+  //Serial.println("button b207 (remove point 4 in trajectory | [X]) pressed");
 }
 
 void b208PopEventHandler(void *ptr) {
-  Serial.println("button b208 (remove point 5 in trajectory | [X]) pressed");
+  //Serial.println("button b208 (remove point 5 in trajectory | [X]) pressed");
 }
 
 void b209PopEventHandler(void *ptr) {
-  Serial.println("button b209 (remove point 6 in trajectory | [X]) pressed");
+  //Serial.println("button b209 (remove point 6 in trajectory | [X]) pressed");
 }
 
 void b210PopEventHandler(void *ptr) {
-  Serial.println("button b210 (remove point 7 in trajectory | [X]) pressed");
+  //Serial.println("button b210 (remove point 7 in trajectory | [X]) pressed");
 }
 
 void b400PopEventHandler(void *ptr) {
-  Serial.println("button b400 (remove element 0 out of queue | [X]) pressed");
+  //Serial.println("button b400 (remove element 0 out of queue | [X]) pressed");
 }
 
 void b401PopEventHandler(void *ptr) {
-  Serial.println("button b401 (remove element 1 out of queue | [X]) pressed");
+  //Serial.println("button b401 (remove element 1 out of queue | [X]) pressed");
 }
 
 void b402PopEventHandler(void *ptr) {
-  Serial.println("button b402 (remove element 2 out of queue | [X]) pressed");
+  //Serial.println("button b402 (remove element 2 out of queue | [X]) pressed");
 }
 
 void b403PopEventHandler(void *ptr) {
-  Serial.println("button b403 (remove element 3 out of queue | [X]) pressed");
+  //Serial.println("button b403 (remove element 3 out of queue | [X]) pressed");
 }
 
 void b404PopEventHandler(void *ptr) {
-  Serial.println("button b404 (remove element 4 out of queue | [X]) pressed");
+  //Serial.println("button b404 (remove element 4 out of queue | [X]) pressed");
 }
 
 void b405PopEventHandler(void *ptr) {
-  Serial.println("button b405 (remove element 5 out of queue | [X]) pressed");
+  //Serial.println("button b405 (remove element 5 out of queue | [X]) pressed");
 }
 
 void b406PopEventHandler(void *ptr) {
-  Serial.println("button b406 (remove element 6 out of queue | [X]) pressed");
+  //Serial.println("button b406 (remove element 6 out of queue | [X]) pressed");
 }
 
 void b407PopEventHandler(void *ptr) {
-  Serial.println("button b407 (remove element 7 out of queue | [X]) pressed");
+  //Serial.println("button b407 (remove element 7 out of queue | [X]) pressed");
 }
 
 void b408PopEventHandler(void *ptr) {
-  Serial.println("button b408 (remove element 8 out of queue | [X]) pressed");
+  //Serial.println("button b408 (remove element 8 out of queue | [X]) pressed");
 }
 
 void b409PopEventHandler(void *ptr) {
-  Serial.println("button b409 (remove element 9 out of queue | [X]) pressed");
+  //Serial.println("button b409 (remove element 9 out of queue | [X]) pressed");
 }
 
 //dual-state buttons event handlers
 void bt100PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt100.getValue(&dual_state);
-  if(dual_state) {
-      suck(true);
+  if (dual_state) {
+    suck(true);
   } else {
-      suck(false);
+    suck(false);
   }
-  Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
+  //Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
 }
 
 void bt101PopEventHandler(void *ptr) {
-  Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
+  //Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
   moveIncrement = 0.1;
   gPTPCmd.x = 180;
   gPTPCmd.y = 0;
@@ -388,66 +534,66 @@ void bt101PopEventHandler(void *ptr) {
 }
 
 void bt102PopEventHandler(void *ptr) {
-  Serial.println("button bt102 (movement increment 1 | [1]) pressed");
+  //Serial.println("button bt102 (movement increment 1 | [1]) pressed");
   moveIncrement = 1;
 }
 
 void bt103PopEventHandler(void *ptr) {
-  Serial.println("button bt103 (movement increment 10 | [10]) pressed");
+  //Serial.println("button bt103 (movement increment 10 | [10]) pressed");
   moveIncrement = 10;
 }
 
 void bt104PopEventHandler(void *ptr) {
-  Serial.println("button bt104 (movement increment 50 | [50]) pressed");
+  //Serial.println("button bt104 (movement increment 50 | [50]) pressed");
   moveIncrement = 50;
 }
 
 void bt300PopEventHandler(void *ptr) {
-  Serial.println("button bt300 (activates route 1| [Activate Route 1]) pressed");
+  //Serial.println("button bt300 (activates route 1| [Activate Route 1]) pressed");
 }
 
 void bt301PopEventHandler(void *ptr) {
-  Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
+  //Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
 }
 
 void bt302PopEventHandler(void *ptr) {
-  Serial.println("button bt302 (activates route 3| [Activate Route 3]) pressed");
+  //Serial.println("button bt302 (activates route 3| [Activate Route 3]) pressed");
 }
 
 void bt303PopEventHandler(void *ptr) {
-  Serial.println("button bt303 (activates route 4| [Activate Route 3]) pressed");
+  //Serial.println("button bt303 (activates route 4| [Activate Route 3]) pressed");
 }
 
 void bt304PopEventHandler(void *ptr) {
-  Serial.println("button bt304 (activates sensor detect mode on route 1| [Activate On Sensor Detect]) pressed");
+  //Serial.println("button bt304 (activates sensor detect mode on route 1| [Activate On Sensor Detect]) pressed");
 }
 
 void bt305PopEventHandler(void *ptr) {
-  Serial.println("button bt305 (activates sensor detect mode on route 2| [Activate On Sensor Detect]) pressed");
+  //Serial.println("button bt305 (activates sensor detect mode on route 2| [Activate On Sensor Detect]) pressed");
 }
 
 void bt306PopEventHandler(void *ptr) {
-  Serial.println("button bt306 (activates sensor detect mode on route 3| [Activate On Sensor Detect]) pressed");
+  //Serial.println("button bt306 (activates sensor detect mode on route 3| [Activate On Sensor Detect]) pressed");
 }
 
 void bt307PopEventHandler(void *ptr) {
-  Serial.println("button bt307 (activates sensor detect mode on route 4| [Activate On Sensor Detect]) pressed");
+  //Serial.println("button bt307 (activates sensor detect mode on route 4| [Activate On Sensor Detect]) pressed");
 }
 
 void bt308PopEventHandler(void *ptr) {
-  Serial.println("button bt308 (activates repeat mode on route 1| [Activate On Repeat]) pressed");
+  //Serial.println("button bt308 (activates repeat mode on route 1| [Activate On Repeat]) pressed");
 }
 
 void bt309PopEventHandler(void *ptr) {
-  Serial.println("button bt309 (activates repeat mode on route 2| [Activate On Repeat]) pressed");
+  //Serial.println("button bt309 (activates repeat mode on route 2| [Activate On Repeat]) pressed");
 }
 
 void bt310PopEventHandler(void *ptr) {
-  Serial.println("button bt310 (activates repeat mode on route 3| [Activate On Repeat]) pressed");
+  //Serial.println("button bt310 (activates repeat mode on route 3| [Activate On Repeat]) pressed");
 }
 
 void bt311PopEventHandler(void *ptr) {
-  Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
+  //Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
 }
 
 void updateScreen() {
@@ -475,7 +621,6 @@ void updateScreen() {
   } else if (currentPage == 4) {
   }
 }
-
 /*********************************************************************************************************
 ** Function name:       setup
 ** Descriptions:        Initializes Serial
@@ -636,9 +781,9 @@ void InitRAM(void) {
 }
 
 void suck(bool suckIt) {
-  if(suckIt == true) {
+  if (suckIt == true) {
     SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-  } else if(suckIt == false) {
+  } else if (suckIt == false) {
     SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
   }
 }
@@ -660,13 +805,33 @@ void loop() {
   printf("\r\n======Enter demo application======\r\n");
   int count = 0;
   //set the starting position after 3 seconds of the code starting
-  delay(3000);
+  delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  ProtocolProcess();
 
   for (;;) {
     nexLoop(nex_listen_list);
     static uint32_t timer = millis();
     static uint32_t count = 0;
+    int *nextCommandRAW = queue.getNextInQueueAndRemoveIt();
+    int nextCommand = nextCommandRAW[0];
+    Serial.println(nextCommand);
+    switch (nextCommand) {
+      //command is empty
+      case 9999:
+        break;
+      //this is the command to move the dobot, parameters determine to where
+      case 1001:
+        gPTPCmd.x += nextCommandRAW[1];
+        gPTPCmd.y += nextCommandRAW[2];
+        gPTPCmd.z += nextCommandRAW[3];
+        gPTPCmd.r += nextCommandRAW[4];
+        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        break;
+      case 1002:
+        break;
+    }
     ProtocolProcess();
+    delay(1000);
   }
 }
