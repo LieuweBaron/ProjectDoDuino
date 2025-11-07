@@ -42,14 +42,13 @@ PTPCommonParams gPTPCommonParams;
 PTPCmd gPTPCmd;
 
 uint64_t gQueuedCmdIndex;
-int currentMillis = 0;
-int delayTime = 0;
+uint32_t timer = 0;
+uint32_t delayTime = 0;
 int queueSize = 5;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 
-uint32_t timer = 0;
 float moveIncrement = 0;
 int currentPage = 1;
 //dual state button states
@@ -298,6 +297,10 @@ public:
       }
     }
     return nextInQueueValueArray;
+  }
+
+  void setDelayTime(int index, int value) {
+    queue[index].pArray[3] = value;
   }
 
   void compressQueue() {
@@ -819,19 +822,20 @@ void loop() {
   //delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
-
+  //142279
   for (;;) {
     nexLoop(nex_listen_list);
     timer = millis();
     static uint32_t count = 0;
     int nextCommandIndex = queue.getNextInQueueIndex();
-    int *nextCommandRAW = queue.getNextInQueueValues();
-    int nextCommand = nextCommandRAW[0];
+    int *nextCommandParams = queue.getNextInQueueValues();
+    int nextCommand = nextCommandParams[0]; 
     //Serial.println(timer);
-    if (nextCommandRAW[4] != 9999) {
-      delayTime = (timer + nextCommandRAW[4]);
-      nextCommandRAW[4] = 9999;
+    if (nextCommandParams[4] != 9999) {
+      delayTime = millis() + nextCommandParams[4];
+      queue.setDelayTime(nextCommandIndex, 9999);
     } 
+    //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
     Serial.print("timer: "); Serial.print(timer);Serial.print(" delayTime: ");Serial.println(delayTime);
     if (timer >= delayTime) {
       switch (nextCommand) {
@@ -840,9 +844,9 @@ void loop() {
           break;
         //this is the command to move the dobot, parameters determine to where
         case 1001:
-          gPTPCmd.x += nextCommandRAW[1];
-          gPTPCmd.y += nextCommandRAW[2];
-          gPTPCmd.z += nextCommandRAW[3];
+          gPTPCmd.x += nextCommandParams[1];
+          gPTPCmd.y += nextCommandParams[2];
+          gPTPCmd.z += nextCommandParams[3];
           gPTPCmd.r += 0;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
@@ -853,6 +857,6 @@ void loop() {
     }
     count++;
     ProtocolProcess();
-    delay(50);
+    delay(1000);
   }
 }
