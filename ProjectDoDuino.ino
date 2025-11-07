@@ -903,16 +903,14 @@ void loop() {
   for (;;) {
     nexLoop(nex_listen_list);
     timer = millis();
-    static uint32_t count = 0;
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams[0];
-
-    Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
+    /*Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
     Serial.print("timer: ");
     Serial.print(timer);
     Serial.print(" delayTime: ");
-    Serial.println(delayTime);
+    Serial.println(delayTime);*/
     if (timer >= delayTime) {
       switch (nextCommand) {
         //command is empty
@@ -952,7 +950,6 @@ void loop() {
           break;
       }
     }
-    count++;
     ProtocolProcess();
     delay(1000);
   }
