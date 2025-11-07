@@ -907,11 +907,7 @@ void loop() {
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams[0];
-    //Serial.println(timer);
-    if (nextCommandParams[4] != 9999) {
-      delayTime = millis() + nextCommandParams[4];
-      queue.setDelayTime(nextCommandIndex, 9999);
-    }
+
     Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
     Serial.print("timer: ");
     Serial.print(timer);
@@ -930,7 +926,7 @@ void loop() {
           gPTPCmd.r += 0;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
-          Serial.println("1001");
+          delayTime = millis() + nextCommandParams[4];
           break;
         //this is the command to move the dobot in the negative direction, parameters determine to where
         case 1002:
@@ -940,17 +936,18 @@ void loop() {
           gPTPCmd.r -= 0;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
-          Serial.println("1002");
+          delayTime = millis() + nextCommandParams[4];
           break;
         //this command enables or disables the suction cup, dependant on the parameters
         case 1003:
           if (nextCommandParams[1] == 1) {
             SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
             queue.removeFromQueue(nextCommandIndex);
+            delayTime = millis() + nextCommandParams[4];
           } else if (nextCommandParams[1] == 0) {
             SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
             queue.removeFromQueue(nextCommandIndex);
-            Serial.println("1003");
+            delayTime = millis() + nextCommandParams[4];
           }
           break;
       }
