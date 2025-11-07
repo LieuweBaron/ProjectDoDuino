@@ -383,62 +383,41 @@ commands:
 -1001: move dobot
 -1002: enable/disable suction cup
 */
+
 //button event handlers
 void b100PopEventHandler(void *ptr) {
   //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
-  //gPTPCmd.x += moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //queue.printQueue();
-  //updateScreen();
 }
 
 void b101PopEventHandler(void *ptr) {
   //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
-  //gPTPCmd.x -= moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { -moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //updateScreen();
-  //Serial.println(gPTPCmd.x);
 }
 
 void b102PopEventHandler(void *ptr) {
   //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
-  //gPTPCmd.y += moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //updateScreen();
-  //Serial.println(gPTPCmd.y);
 }
 
 void b103PopEventHandler(void *ptr) {
   //Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
-  //gPTPCmd.y -= moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { 0, -moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //updateScreen();
-  //Serial.println(gPTPCmd.z);
 }
 
 void b104PopEventHandler(void *ptr) {
   //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
-  //gPTPCmd.z += moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //updateScreen();
 }
 void b105PopEventHandler(void *ptr) {
   //Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
-  //gPTPCmd.z -= moveIncrement;
-  //SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   int params[4] = { 0, 0, -moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //updateScreen();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -526,13 +505,18 @@ void b409PopEventHandler(void *ptr) {
 }
 
 //dual-state buttons event handlers
+//pressing this button determines whether the suction cup is on or off
 void bt100PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt100.getValue(&dual_state);
-  if (dual_state) {
-    suck(true);
-  } else {
-    suck(false);
+  if (dual_state == 1) {
+    int params[4] = { 1, 0, 0, 100 };
+    queue.addToQueue(1002, params);
+    Serial.println("on");
+  } else if (dual_state == 0){
+    int params[4] = { 0, 0, 0, 100 };
+    queue.addToQueue(1002, params);
+    Serial.println("off");
   }
   //Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
 }
@@ -540,74 +524,167 @@ void bt100PopEventHandler(void *ptr) {
 void bt101PopEventHandler(void *ptr) {
   //Serial.println("button bt101 (movement increment 0.1 | [0.1]) pressed");
   moveIncrement = 0.1;
-  gPTPCmd.x = 180;
-  gPTPCmd.y = 0;
-  gPTPCmd.z = 0;
-  gPTPCmd.r = 0;
-  SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+  uint32_t dual_state;
+  bt101.getValue(&dual_state);
+  if (dual_state) {
+    moveIncrement = 0.1;
+  } else {
+    moveIncrement = 0;
+  }
 }
 
 void bt102PopEventHandler(void *ptr) {
   //Serial.println("button bt102 (movement increment 1 | [1]) pressed");
   moveIncrement = 1;
+  uint32_t dual_state;
+  bt102.getValue(&dual_state);
+  if (dual_state) {
+    moveIncrement = 1;
+  } else {
+    moveIncrement = 0;
+  }
 }
 
 void bt103PopEventHandler(void *ptr) {
   //Serial.println("button bt103 (movement increment 10 | [10]) pressed");
-  moveIncrement = 10;
+  uint32_t dual_state;
+  bt103.getValue(&dual_state);
+  if (dual_state) {
+    moveIncrement = 10;
+  } else {
+    moveIncrement = 0;
+  }
 }
 
 void bt104PopEventHandler(void *ptr) {
   //Serial.println("button bt104 (movement increment 50 | [50]) pressed");
-  moveIncrement = 50;
+  uint32_t dual_state;
+  bt104.getValue(&dual_state);
+  if (dual_state) {
+    moveIncrement = 50;
+  } else {
+    moveIncrement = 0;
+  }
 }
 
 void bt300PopEventHandler(void *ptr) {
   //Serial.println("button bt300 (activates route 1| [Activate Route 1]) pressed");
+  uint32_t dual_state;
+  bt300.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt301PopEventHandler(void *ptr) {
   //Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
+  uint32_t dual_state;
+  bt301.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt302PopEventHandler(void *ptr) {
   //Serial.println("button bt302 (activates route 3| [Activate Route 3]) pressed");
+  uint32_t dual_state;
+  bt302.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt303PopEventHandler(void *ptr) {
   //Serial.println("button bt303 (activates route 4| [Activate Route 3]) pressed");
+  uint32_t dual_state;
+  bt303.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt304PopEventHandler(void *ptr) {
   //Serial.println("button bt304 (activates sensor detect mode on route 1| [Activate On Sensor Detect]) pressed");
+  uint32_t dual_state;
+  bt304.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt305PopEventHandler(void *ptr) {
   //Serial.println("button bt305 (activates sensor detect mode on route 2| [Activate On Sensor Detect]) pressed");
+  uint32_t dual_state;
+  bt305.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt306PopEventHandler(void *ptr) {
   //Serial.println("button bt306 (activates sensor detect mode on route 3| [Activate On Sensor Detect]) pressed");
+  uint32_t dual_state;
+  bt306.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt307PopEventHandler(void *ptr) {
   //Serial.println("button bt307 (activates sensor detect mode on route 4| [Activate On Sensor Detect]) pressed");
+  uint32_t dual_state;
+  bt307.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt308PopEventHandler(void *ptr) {
   //Serial.println("button bt308 (activates repeat mode on route 1| [Activate On Repeat]) pressed");
+  uint32_t dual_state;
+  bt308.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt309PopEventHandler(void *ptr) {
   //Serial.println("button bt309 (activates repeat mode on route 2| [Activate On Repeat]) pressed");
+  uint32_t dual_state;
+  bt309.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt310PopEventHandler(void *ptr) {
   //Serial.println("button bt310 (activates repeat mode on route 3| [Activate On Repeat]) pressed");
+  uint32_t dual_state;
+  bt310.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void bt311PopEventHandler(void *ptr) {
   //Serial.println("button bt311 (activates repeat mode on route 4| [Activate On Repeat]) pressed");
+  uint32_t dual_state;
+  bt311.getValue(&dual_state);
+  if (dual_state) {
+
+  } else {
+  }
 }
 
 void updateScreen() {
@@ -816,12 +893,13 @@ void loop() {
   SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
   SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
   SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-  printf("\r\n======Enter demo application======\r\n");
+
   int count = 0;
   //set the starting position after 3 seconds of the code starting
-  //delay(5000);
+  delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
+  printf("\r\n======Enter application======\r\n");
   //142279
   for (;;) {
     nexLoop(nex_listen_list);
@@ -829,14 +907,17 @@ void loop() {
     static uint32_t count = 0;
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandParams = queue.getNextInQueueValues();
-    int nextCommand = nextCommandParams[0]; 
+    int nextCommand = nextCommandParams[0];
     //Serial.println(timer);
     if (nextCommandParams[4] != 9999) {
       delayTime = millis() + nextCommandParams[4];
       queue.setDelayTime(nextCommandIndex, 9999);
-    } 
+    }
     //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
-    Serial.print("timer: "); Serial.print(timer);Serial.print(" delayTime: ");Serial.println(delayTime);
+    //Serial.print("timer: ");
+    //Serial.print(timer);
+    //Serial.print(" delayTime: ");
+    //Serial.println(delayTime);
     if (timer >= delayTime) {
       switch (nextCommand) {
         //command is empty
@@ -852,11 +933,16 @@ void loop() {
           queue.removeFromQueue(nextCommandIndex);
           break;
         case 1002:
+          if (nextCommandParams[1] == 1) {
+            SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+          } else if (nextCommandParams[1] == 0) {
+            SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+          }
           break;
       }
     }
     count++;
     ProtocolProcess();
-    delay(1000);
+    delay(50);
   }
 }
