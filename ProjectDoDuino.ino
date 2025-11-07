@@ -1,21 +1,4 @@
-/****************************************Copyright(c)*****************************************************
-**                            Shenzhen Yuejiang Technology Co., LTD.
-**
-**                                 http://www.dobot.cc
-**
-**--------------File Info---------------------------------------------------------------------------------
-** File name:           main.cpp
-** Latest modified Date:2016-10-24
-** Latest Version:      V2.0.0
-** Descriptions:        main body
-**
-**--------------------------------------------------------------------------------------------------------
-** Modify by:           Edward
-** Modified date:       2016-11-25
-** Version:             V1.0.0
-** Descriptions:        Modified,From DobotDemoForSTM32
-**--------------------------------------------------------------------------------------------------------
-*********************************************************************************************************/
+
 #include "stdio.h"
 #include "Protocol.h"
 #include "command.h"
@@ -26,10 +9,6 @@
 #define SERIAL_TX_BUFFER_SIZE 64
 #define SERIAL_RX_BUFFER_SIZE 256
 
-//#define JOG_STICK
-/*********************************************************************************************************
-** Global parameters
-*********************************************************************************************************/
 EndEffectorParams gEndEffectorParams;
 
 JOGJointParams gJOGJointParams;
@@ -719,13 +698,7 @@ void updateScreen() {
   } else if (currentPage == 4) {
   }
 }
-/*********************************************************************************************************
-** Function name:       setup
-** Descriptions:        Initializes Serial
-** Input parameters:    none
-** Output parameters:   none
-** Returned value:      none
-*********************************************************************************************************/
+
 void setup() {
   Serial.begin(115200);
   Serial1.begin(115200);
@@ -787,13 +760,6 @@ void setup() {
   //updateScreen();
 }
 
-/*********************************************************************************************************
-** Function name:       Serialread
-** Descriptions:        import data to rxbuffer
-** Input parametersnone:
-** Output parameters:   
-** Returned value:      
-*********************************************************************************************************/
 void Serialread() {
   while (Serial1.available()) {
     uint8_t data = Serial1.read();
@@ -802,36 +768,16 @@ void Serialread() {
     }
   }
 }
-/*********************************************************************************************************
-** Function name:       Serial_putc
-** Descriptions:        Remap Serial to Printf
-** Input parametersnone:
-** Output parameters:   
-** Returned value:      
-*********************************************************************************************************/
+
 int Serial_putc(char c, struct __file *) {
   Serial.write(c);
   return c;
 }
 
-/*********************************************************************************************************
-** Function name:       printf_begin
-** Descriptions:        Initializes Printf
-** Input parameters:    
-** Output parameters:
-** Returned value:      
-*********************************************************************************************************/
 void printf_begin(void) {
   fdevopen(&Serial_putc, 0);
 }
 
-/*********************************************************************************************************
-** Function name:       InitRAM
-** Descriptions:        Initializes a global variable
-** Input parameters:    none
-** Output parameters:   none
-** Returned value:      none
-*********************************************************************************************************/
 void InitRAM(void) {
   //Set JOG Model
   gJOGJointParams.velocity[0] = 100;
@@ -877,14 +823,6 @@ void InitRAM(void) {
 
   gQueuedCmdIndex = 0;
 }
-
-/*********************************************************************************************************
-** Function name:       loop
-** Descriptions:        Program entry
-** Input parameters:    none
-** Output parameters:   none
-** Returned value:      none
-*********************************************************************************************************/
 
 void loop() {
   InitRAM();
