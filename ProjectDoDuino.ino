@@ -528,8 +528,10 @@ void bt101PopEventHandler(void *ptr) {
   bt101.getValue(&dual_state);
   if (dual_state) {
     moveIncrement = 0.1;
+    Serial.println("on");
   } else {
     moveIncrement = 0;
+    Serial.println("off");
   }
 }
 
@@ -871,14 +873,6 @@ void InitRAM(void) {
   gQueuedCmdIndex = 0;
 }
 
-void suck(bool suckIt) {
-  if (suckIt == true) {
-    SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-  } else if (suckIt == false) {
-    SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-  }
-}
-
 /*********************************************************************************************************
 ** Function name:       loop
 ** Descriptions:        Program entry
@@ -935,8 +929,10 @@ void loop() {
         case 1002:
           if (nextCommandParams[1] == 1) {
             SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
           } else if (nextCommandParams[1] == 0) {
             SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
           }
           break;
       }
