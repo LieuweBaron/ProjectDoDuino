@@ -380,8 +380,9 @@ void page4PushEventHandler(void *ptr) {
 
 /*
 commands:
--1001: move dobot
--1002: enable/disable suction cup
+-1001: move dobot in positive direction
+-1002: move dobot in negative direction
+-1003: enable/disable suction cup
 */
 
 //button event handlers
@@ -389,35 +390,41 @@ void b100PopEventHandler(void *ptr) {
   //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
   int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
+  //queue.printQueue();
 }
 
 void b101PopEventHandler(void *ptr) {
   //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
-  int params[4] = { -moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
+  queue.addToQueue(1002, params);
+  //queue.printQueue();
 }
 
 void b102PopEventHandler(void *ptr) {
   //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
   int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
+  //queue.printQueue();
 }
 
 void b103PopEventHandler(void *ptr) {
-  //Serial.println("button b103 (move Dobot in -Y Direction | [+Y]) pressed");
-  int params[4] = { 0, -moveIncrement, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  //Serial.println("button b103 (move Dobot in -Y Direction | [-Y]) pressed");
+  int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
+  queue.addToQueue(1002, params);
+  //queue.printQueue();
 }
 
 void b104PopEventHandler(void *ptr) {
   //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
   int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
+  //queue.printQueue();
 }
 void b105PopEventHandler(void *ptr) {
-  //Serial.println("button b105 (move Dobot in -Z Direction | [+Z]) pressed");
-  int params[4] = { 0, 0, -moveIncrement, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  //Serial.println("button b105 (move Dobot in -Z Direction | [-Z]) pressed");
+  int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
+  queue.addToQueue(1002, params);
+  //queue.printQueue();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -509,13 +516,13 @@ void b409PopEventHandler(void *ptr) {
 void bt100PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt100.getValue(&dual_state);
-  if (dual_state == 1) {
+  if (dual_state) {
     int params[4] = { 1, 0, 0, 100 };
-    queue.addToQueue(1002, params);
+    queue.addToQueue(1003, params);
     Serial.println("on");
-  } else if (dual_state == 0){
+  } else {
     int params[4] = { 0, 0, 0, 100 };
-    queue.addToQueue(1002, params);
+    queue.addToQueue(1003, params);
     Serial.println("off");
   }
   //Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
@@ -528,10 +535,8 @@ void bt101PopEventHandler(void *ptr) {
   bt101.getValue(&dual_state);
   if (dual_state) {
     moveIncrement = 0.1;
-    Serial.println("on");
   } else {
     moveIncrement = 0;
-    Serial.println("off");
   }
 }
 
@@ -907,17 +912,17 @@ void loop() {
       delayTime = millis() + nextCommandParams[4];
       queue.setDelayTime(nextCommandIndex, 9999);
     }
-    //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
-    //Serial.print("timer: ");
-    //Serial.print(timer);
-    //Serial.print(" delayTime: ");
-    //Serial.println(delayTime);
+    Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
+    Serial.print("timer: ");
+    Serial.print(timer);
+    Serial.print(" delayTime: ");
+    Serial.println(delayTime);
     if (timer >= delayTime) {
       switch (nextCommand) {
         //command is empty
         case 9999:
           break;
-        //this is the command to move the dobot, parameters determine to where
+        //this is the command to move the dobot in the positive direction, parameters determine to where
         case 1001:
           gPTPCmd.x += nextCommandParams[1];
           gPTPCmd.y += nextCommandParams[2];
@@ -925,20 +930,33 @@ void loop() {
           gPTPCmd.r += 0;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
+          Serial.println("1001");
           break;
+        //this is the command to move the dobot in the negative direction, parameters determine to where
         case 1002:
+          gPTPCmd.x -= nextCommandParams[1];
+          gPTPCmd.y -= nextCommandParams[2];
+          gPTPCmd.z -= nextCommandParams[3];
+          gPTPCmd.r -= 0;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("1002");
+          break;
+        //this command enables or disables the suction cup, dependant on the parameters
+        case 1003:
           if (nextCommandParams[1] == 1) {
             SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
             queue.removeFromQueue(nextCommandIndex);
           } else if (nextCommandParams[1] == 0) {
             SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
             queue.removeFromQueue(nextCommandIndex);
+            Serial.println("1003");
           }
           break;
       }
     }
     count++;
     ProtocolProcess();
-    delay(50);
+    delay(1000);
   }
 }
