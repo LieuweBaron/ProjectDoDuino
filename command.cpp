@@ -313,7 +313,7 @@ int GetPose(Pose *pose)
     return true;
 }
 
-int SetHomeCmd()
+int SetHOMECmd()
 {
     Message tempMessage;
     tempMessage.id = ProtocolHOMECmd;

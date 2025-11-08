@@ -27,6 +27,7 @@ int queueSize = 5;
 //if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
+bool homed = 0;
 
 float moveIncrement = 0;
 int currentPage = 1;
@@ -55,7 +56,8 @@ NexPage page1 = NexPage(0, 0, "page1");  //page 0, reffered to as page 1, Contro
 NexPage page2 = NexPage(1, 0, "page2");  //page 1, reffered to as page 2, Routes page
 NexPage page3 = NexPage(2, 0, "page3");  //page 2, reffered to as page 3, Use Routes page
 NexPage page4 = NexPage(3, 0, "page4");  //page 3, reffered to as page 4, Queue page
-NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 1, Controls page
+NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 5, Loading page
+NexPage page6 = NexPage(5, 0, "page6");  //page 0, reffered to as page 6, Homing page
 
 //buttons on nextion screen
 NexButton b100 = NexButton(0, 18, "b100");  //button that moves X in the + direction, page 1
@@ -87,6 +89,8 @@ NexButton b406 = NexButton(3, 17, "b406");  //button that removes element 6 out 
 NexButton b407 = NexButton(3, 18, "b407");  //button that removes element 7 out of the queue, page 4
 NexButton b408 = NexButton(3, 19, "b408");  //button that removes element 8 out of the queue, page 4
 NexButton b409 = NexButton(3, 20, "b409");  //button that removes element 9 out of the queue, page 4
+
+NexButton b600 = NexButton(5, 2, "b600");  //button that homing has been completed by the user, page 6
 
 //dual-state buttons on nextion screen
 NexDSButton bt100 = NexDSButton(0, 24, "bt100");  //enable or disable suction cup
@@ -148,6 +152,7 @@ NexTouch *nex_listen_list[] = {
   &page3,
   &page4,
   &page5,
+  &page6,
 
   &b100,
   &b101,
@@ -176,6 +181,7 @@ NexTouch *nex_listen_list[] = {
   &b407,
   &b408,
   &b409,
+  &b600,
 
   &bt100,
   &bt101,
@@ -365,8 +371,13 @@ void page4PushEventHandler(void *ptr) {
 }
 
 void page5PushEventHandler(void *ptr) {
-  //Serial.println("Page 4");
+  //Serial.println("Page 5");
   currentPage = 5;
+}
+
+void page6pushEventHandler(void *ptr) {
+  //Serial.println("Page 6");
+  currentPage = 6;
 }
 
 /*
@@ -500,6 +511,13 @@ void b408PopEventHandler(void *ptr) {
 
 void b409PopEventHandler(void *ptr) {
   //Serial.println("button b409 (remove element 9 out of queue | [X]) pressed");
+}
+
+void b600PopEventHandler(void *ptr) {
+  //Serial.println("button b600 pressed");
+  int params[4] = { 181.8, -3, -41.4, 500 };
+  queue.addToQueue(1001, params);
+  homed = 1;
 }
 
 //dual-state buttons event handlers
@@ -728,6 +746,7 @@ void setup() {
   page3.attachPush(page3PushEventHandler);
   page4.attachPush(page4PushEventHandler);
   page5.attachPush(page5PushEventHandler);
+  page6.attachPush(page5PushEventHandler);
 
   b100.attachPop(b100PopEventHandler, &b100);
   b101.attachPop(b101PopEventHandler, &b101);
@@ -756,6 +775,7 @@ void setup() {
   b407.attachPop(b407PopEventHandler, &b407);
   b408.attachPop(b408PopEventHandler, &b408);
   b409.attachPop(b409PopEventHandler, &b409);
+  b600.attachPop(b600PopEventHandler, &b600);
 
   bt100.attachPop(bt100PopEventHandler, &bt100);
   bt101.attachPop(bt101PopEventHandler, &bt101);
@@ -853,6 +873,12 @@ void loop() {
   delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
+  delay(1000);
+  page6.show();
+  while (homed != 1) {
+    nexLoop(nex_listen_list);
+    delay(10);
+  }
   printf("\r\n======Enter application======\r\n");
   page1.show();
   //142279
