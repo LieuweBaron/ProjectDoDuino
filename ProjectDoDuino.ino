@@ -51,10 +51,12 @@ int bt311State = -1;
 
 String displayText = "...";
 //pages on nextion screen
-NexPage page1 = NexPage(0, 0, "page0");  //page 0, reffered to as page 1, Controls page
-NexPage page2 = NexPage(1, 0, "page1");  //page 1, reffered to as page 2, Routes page
-NexPage page3 = NexPage(2, 0, "page2");  //page 2, reffered to as page 3, Use Routes page
-NexPage page4 = NexPage(3, 0, "page3");  //page 3, reffered to as page 4, Queue page
+NexPage page1 = NexPage(0, 0, "page1");  //page 0, reffered to as page 1, Controls page
+NexPage page2 = NexPage(1, 0, "page2");  //page 1, reffered to as page 2, Routes page
+NexPage page3 = NexPage(2, 0, "page3");  //page 2, reffered to as page 3, Use Routes page
+NexPage page4 = NexPage(3, 0, "page4");  //page 3, reffered to as page 4, Queue page
+NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 1, Controls page
+
 //buttons on nextion screen
 NexButton b100 = NexButton(0, 18, "b100");  //button that moves X in the + direction, page 1
 NexButton b101 = NexButton(0, 19, "b101");  //button that moves X in the - direction, page 1
@@ -145,6 +147,7 @@ NexTouch *nex_listen_list[] = {
   &page2,
   &page3,
   &page4,
+  &page5,
 
   &b100,
   &b101,
@@ -341,20 +344,29 @@ cmdQueue queue;
 void page1PushEventHandler(void *ptr) {
   //Serial.println("Page 1");
   currentPage = 1;
+  updateScreen();
 }
 
 void page2PushEventHandler(void *ptr) {
   //Serial.println("Page 2");
   currentPage = 2;
+  updateScreen();
 }
 void page3PushEventHandler(void *ptr) {
   //Serial.println("Page 3");
   currentPage = 3;
+  updateScreen();
 }
 
 void page4PushEventHandler(void *ptr) {
   //Serial.println("Page 4");
   currentPage = 4;
+  updateScreen();
+}
+
+void page5PushEventHandler(void *ptr) {
+  //Serial.println("Page 4");
+  currentPage = 5;
 }
 
 /*
@@ -673,6 +685,10 @@ void bt311PopEventHandler(void *ptr) {
   }
 }
 
+bool outOfBounds(int x, int y, int z) {
+  return true;
+}
+
 void updateScreen() {
   if (currentPage == 1) {
     displayText = String((gPTPCmd.x), 1);
@@ -711,6 +727,7 @@ void setup() {
   page2.attachPush(page2PushEventHandler);
   page3.attachPush(page3PushEventHandler);
   page4.attachPush(page4PushEventHandler);
+  page5.attachPush(page5PushEventHandler);
 
   b100.attachPop(b100PopEventHandler, &b100);
   b101.attachPop(b101PopEventHandler, &b101);
@@ -758,6 +775,7 @@ void setup() {
   bt310.attachPop(bt310PopEventHandler, &bt310);
   bt311.attachPop(bt311PopEventHandler, &bt311);
   //updateScreen();
+  page5.show();
 }
 
 void Serialread() {
@@ -816,7 +834,7 @@ void InitRAM(void) {
   gPTPCommonParams.accelerationRatio = 50;
 
   gPTPCmd.ptpMode = MOVL_XYZ;
-  gPTPCmd.x = 180;
+  gPTPCmd.x = 189;
   gPTPCmd.y = 0;
   gPTPCmd.z = 0;
   gPTPCmd.r = 0;
@@ -830,13 +848,13 @@ void loop() {
   SetJOGJointParams(&gJOGJointParams, true, &gQueuedCmdIndex);
   SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
   SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
-
   int count = 0;
   //set the starting position after 3 seconds of the code starting
   delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
   printf("\r\n======Enter application======\r\n");
+  page1.show();
   //142279
   for (;;) {
     nexLoop(nex_listen_list);
@@ -863,6 +881,13 @@ void loop() {
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           delayTime = millis() + nextCommandParams[4];
+          displayText = String((gPTPCmd.x), 1);
+          t100.setText(displayText.c_str());
+          displayText = String((gPTPCmd.y), 1);
+          t103.setText(displayText.c_str());
+          displayText = String((gPTPCmd.z), 1);
+          t106.setText(displayText.c_str());
+
           break;
         //this is the command to move the dobot in the negative direction, parameters determine to where
         case 1002:
