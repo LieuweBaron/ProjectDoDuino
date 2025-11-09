@@ -515,7 +515,7 @@ void b409PopEventHandler(void *ptr) {
 
 void b600PopEventHandler(void *ptr) {
   //Serial.println("button b600 pressed");
-  int params[4] = { 181.8, -3, -41.4, 500 };
+  int params[4] = {-67,-2,-42,500};//{ 181.8, -3, -41.4, 500 };
   queue.addToQueue(1001, params);
   homed = 1;
 }
@@ -543,7 +543,7 @@ void bt101PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt101.getValue(&dual_state);
   if (dual_state) {
-    moveIncrement = 0.1;
+    moveIncrement = 1;
   } else {
     moveIncrement = 0;
   }
@@ -555,7 +555,7 @@ void bt102PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt102.getValue(&dual_state);
   if (dual_state) {
-    moveIncrement = 1;
+    moveIncrement = 10;
   } else {
     moveIncrement = 0;
   }
@@ -566,7 +566,7 @@ void bt103PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt103.getValue(&dual_state);
   if (dual_state) {
-    moveIncrement = 10;
+    moveIncrement = 50;
   } else {
     moveIncrement = 0;
   }
@@ -577,7 +577,7 @@ void bt104PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt104.getValue(&dual_state);
   if (dual_state) {
-    moveIncrement = 50;
+    moveIncrement = 100;
   } else {
     moveIncrement = 0;
   }
@@ -924,6 +924,12 @@ void loop() {
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           delayTime = millis() + nextCommandParams[4];
+          displayText = String((gPTPCmd.x), 1);
+          t100.setText(displayText.c_str());
+          displayText = String((gPTPCmd.y), 1);
+          t103.setText(displayText.c_str());
+          displayText = String((gPTPCmd.z), 1);
+          t106.setText(displayText.c_str());
           break;
         //this command enables or disables the suction cup, dependant on the parameters
         case 1003:
