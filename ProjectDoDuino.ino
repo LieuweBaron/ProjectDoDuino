@@ -1035,66 +1035,85 @@ void loop() {
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams[0];
+    if (nextCommandParams[4] == 9999) {
+      nextCommandParams[4] = 0;
+    }
+    //error handling, sometimes command = 0
+    if(nextCommand == 9999 || nextCommand == 1001 || nextCommand == 1002 || nextCommand == 1003) {
+    } else {
+      queue.printQueue();
+      Serial.println("error");
+      Serial.println(queue.getNextInQueueIndex());
+    }
     //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
     //Serial.print("timer: ");
     //Serial.print(timer);
     //Serial.print(" delayTime: ");
     //Serial.println(delayTime);
-    if (timer >= delayTime) {
-      switch (nextCommand) {
-        //command is empty
-        case 9999:
-          break;
-        //this is the command to move the dobot in the positive direction, parameters determine to where
-        case 1001:
-          gPTPCmd.x += nextCommandParams[1];
-          gPTPCmd.y += nextCommandParams[2];
-          gPTPCmd.z += nextCommandParams[3];
-          gPTPCmd.r += 0;
-          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+
+    Serial.println("EXECUTING");
+    Serial.println(nextCommand);
+    nexLoop(nex_listen_list);
+    switch (nextCommand) {
+      //command is empty
+      case 9999:
+        break;
+      case 0:
+        queue.removeFromQueue(nextCommandIndex);
+        break;
+      //this is the command to move the dobot in the positive direction, parameters determine to where
+      case 1001:
+        gPTPCmd.x += nextCommandParams[1];
+        gPTPCmd.y += nextCommandParams[2];
+        gPTPCmd.z += nextCommandParams[3];
+        gPTPCmd.r += 0;
+        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        queue.removeFromQueue(nextCommandIndex);
+        delayTime = millis() + nextCommandParams[4];
+        if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+          updateScreen();
+        }
+        break;
+      //this is the command to move the dobot in the negative direction, parameters determine to where
+      case 1002:
+        gPTPCmd.x -= nextCommandParams[1];
+        gPTPCmd.y -= nextCommandParams[2];
+        gPTPCmd.z -= nextCommandParams[3];
+        gPTPCmd.r -= 0;
+        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        queue.removeFromQueue(nextCommandIndex);
+        delayTime = millis() + nextCommandParams[4];
+        displayText = String((gPTPCmd.x), 1);
+        t100.setText(displayText.c_str());
+        displayText = String((gPTPCmd.y), 1);
+        t103.setText(displayText.c_str());
+        displayText = String((gPTPCmd.z), 1);
+        t106.setText(displayText.c_str());
+        if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+          updateScreen();
+        }
+        break;
+      //this command enables or disables the suction cup, dependant on the parameters
+      case 1003:
+        if (nextCommandParams[1] == 1) {
+          SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           delayTime = millis() + nextCommandParams[4];
-          if(currentPage == 1 || currentPage == 2 || currentPage == 4) {
-            updateScreen();
-          }
-          break;
-        //this is the command to move the dobot in the negative direction, parameters determine to where
-        case 1002:
-          gPTPCmd.x -= nextCommandParams[1];
-          gPTPCmd.y -= nextCommandParams[2];
-          gPTPCmd.z -= nextCommandParams[3];
-          gPTPCmd.r -= 0;
-          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        } else if (nextCommandParams[1] == 0) {
+          SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           delayTime = millis() + nextCommandParams[4];
-          displayText = String((gPTPCmd.x), 1);
-          t100.setText(displayText.c_str());
-          displayText = String((gPTPCmd.y), 1);
-          t103.setText(displayText.c_str());
-          displayText = String((gPTPCmd.z), 1);
-          t106.setText(displayText.c_str());
-          if(currentPage == 1 || currentPage == 2 || currentPage == 4) {
-            updateScreen();
-          }
-          break;
-        //this command enables or disables the suction cup, dependant on the parameters
-        case 1003:
-          if (nextCommandParams[1] == 1) {
-            SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-            delayTime = millis() + nextCommandParams[4];
-          } else if (nextCommandParams[1] == 0) {
-            SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-            delayTime = millis() + nextCommandParams[4];
-          }
-          if(currentPage == 2 || currentPage == 4) {
-            updateScreen();
-          }
-          break;
-      }
+        }
+        if (currentPage == 2 || currentPage == 4) {
+          updateScreen();
+        }
+        break;
     }
     ProtocolProcess();
-    //delay(10);
+    while (!(millis() >= (timer + nextCommandParams[4]))) {
+      nexLoop(nex_listen_list);
+      Serial.println("WAITING");
+    }
+    delay(201);
   }
 }
