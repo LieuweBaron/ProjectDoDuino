@@ -334,7 +334,7 @@ int SetHOMECmd()
     tempMessage.id = ProtocolAlarmsState;
     tempMessage.rw = true;
     tempMessage.isQueued = isQueued;
-    tempMessage.paramsLen = 2;//sizeof(AlarmsState);
+    tempMessage.paramsLen = 0;//sizeof(AlarmsState);
     memcpy(tempMessage.params, tempMessage.paramsLen);
 
     MessageWrite(&gSerialProtocolHandler, &tempMessage);

@@ -270,6 +270,7 @@ public:
     return nextIndex;
   }
 
+
   int *getNextInQueueValues() {
     int *nextInQueueValueArray = new int[5];
     for (int i = 0; i <= 5; i++) {
@@ -283,6 +284,15 @@ public:
         }
         break;
       }
+    }
+    return nextInQueueValueArray;
+  }
+
+  int *getQueueValuesOfIndex(int index) {
+    int *nextInQueueValueArray = new int[5];
+    nextInQueueValueArray[0] = queue[index].command;
+    for (int j = 1; j <= 4; j++) {
+      nextInQueueValueArray[j] = queue[index].pArray[j - 1];
     }
     return nextInQueueValueArray;
   }
@@ -392,41 +402,41 @@ void b100PopEventHandler(void *ptr) {
   //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
   int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 
 void b101PopEventHandler(void *ptr) {
   //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
   int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1002, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 
 void b102PopEventHandler(void *ptr) {
   //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
   int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 
 void b103PopEventHandler(void *ptr) {
   //Serial.println("button b103 (move Dobot in -Y Direction | [-Y]) pressed");
   int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
   queue.addToQueue(1002, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 
 void b104PopEventHandler(void *ptr) {
   //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
   int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1001, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 void b105PopEventHandler(void *ptr) {
   //Serial.println("button b105 (move Dobot in -Z Direction | [-Z]) pressed");
   int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
   queue.addToQueue(1002, params);
-  //queue.printQueue();
+  queue.printQueue();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -475,48 +485,81 @@ void b210PopEventHandler(void *ptr) {
 
 void b400PopEventHandler(void *ptr) {
   //Serial.println("button b400 (remove element 0 out of queue | [X]) pressed");
+  queue.removeFromQueue(0);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b401PopEventHandler(void *ptr) {
   //Serial.println("button b401 (remove element 1 out of queue | [X]) pressed");
+  queue.removeFromQueue(1);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b402PopEventHandler(void *ptr) {
   //Serial.println("button b402 (remove element 2 out of queue | [X]) pressed");
+  queue.removeFromQueue(2);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b403PopEventHandler(void *ptr) {
   //Serial.println("button b403 (remove element 3 out of queue | [X]) pressed");
+  queue.removeFromQueue(3);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b404PopEventHandler(void *ptr) {
   //Serial.println("button b404 (remove element 4 out of queue | [X]) pressed");
+  queue.removeFromQueue(4);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b405PopEventHandler(void *ptr) {
   //Serial.println("button b405 (remove element 5 out of queue | [X]) pressed");
+  queue.removeFromQueue(5);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b406PopEventHandler(void *ptr) {
   //Serial.println("button b406 (remove element 6 out of queue | [X]) pressed");
+  queue.removeFromQueue(6);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b407PopEventHandler(void *ptr) {
   //Serial.println("button b407 (remove element 7 out of queue | [X]) pressed");
+  queue.removeFromQueue(7);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b408PopEventHandler(void *ptr) {
   //Serial.println("button b408 (remove element 8 out of queue | [X]) pressed");
+  queue.removeFromQueue(8);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b409PopEventHandler(void *ptr) {
   //Serial.println("button b409 (remove element 9 out of queue | [X]) pressed");
+  queue.removeFromQueue(9);
+  queue.compressQueue();
+  updateScreen();
 }
 
 void b600PopEventHandler(void *ptr) {
   //Serial.println("button b600 pressed");
-  int params[4] = {-67,-2,-42,500};//{ 181.8, -3, -41.4, 500 };
+  int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
   queue.addToQueue(1001, params);
+  Serial.println(gPTPCmd.x);
+  Serial.println(gPTPCmd.y);
+  Serial.println(gPTPCmd.z);
   homed = 1;
 }
 
@@ -703,7 +746,48 @@ void bt311PopEventHandler(void *ptr) {
   }
 }
 
+int bounds[31][3] = {
+  { 150, 0, 0 },
+  { 140, 0, 0 },
+  { 130, 0, 0 },
+  { 120, 0, 0 },
+  { 110, 0, 0 },
+  { 100, 0, 0 },
+  { 90, 0, 0 },
+  { 80, 0, 0 },
+  { 70, 0, 0 },
+  { 60, 0, 0 },
+  { 50, 0, 0 },
+  { 40, 0, 0 },
+  { 30, 0, 0 },
+  { 20, 0, 0 },
+  { 10, 0, 0 },
+  { 0, 0, 0 },
+  { -10, 0, 0 },
+  { -20, 0, 0 },
+  { -30, 0, 0 },
+  { -40, 0, 0 },
+  { -50, 0, 0 },
+  { -60, 0, 0 },
+  { -70, 0, 0 },
+  { -80, 0, 0 },
+  { -90, 0, 0 },
+  { -100, 0, 0 },
+  { -110, 0, 0 },
+  { -120, 0, 0 },
+  { -130, 0, 0 },
+  { -140, 0, 0 },
+  { -150, 0, 0 }
+};
+
 bool outOfBounds(int x, int y, int z) {
+  // Base rotation
+  float baseAngle = atan2(y, x) * (180.0 / 3.1415);
+  if (!(baseAngle <= 90 && baseAngle >= -90)) {
+    return false;
+  }
+  float l = sqrt(x * x + y * y);  //line to position of the endpoint in 2d plane
+  //if l between bounds then valid move
   return true;
 }
 
@@ -724,13 +808,75 @@ void updateScreen() {
     t106.setText(displayText.c_str());
     t107.setText("...");
     t108.setText("...");
-
+    return;
   } else if (currentPage == 2) {
-
+    return;
   } else if (currentPage == 3) {
-
+    return;
   } else if (currentPage == 4) {
+    for (int i = 0; i < 10; i++) {
+      int *commandParams = queue.getQueueValuesOfIndex(i);
+      if (commandParams[0] == 9999) {
+        displayText = "empty";
+      } else if (commandParams[0] = 1001) {
+        if (commandParams[1] != 0) {
+          displayText = "move +X by: " + String(commandParams[0]);
+        } else if (commandParams[2] != 0) {
+          displayText = "move +Y by: " + String(commandParams[1]);
+        } else if (commandParams[3] != 0) {
+          displayText = "move +Z by: " + String(commandParams[2]);
+        }
+      } else if (commandParams[0] = 1002) {
+        if (commandParams[1] != 0) {
+          displayText = "move -X by: " + String(commandParams[0]);
+        } else if (commandParams[2] != 0) {
+          displayText = "move -Y by: " + String(commandParams[1]);
+        } else if (commandParams[3] != 0) {
+          displayText = "move -Z by: " + String(commandParams[2]);
+        }
+      } else if (commandParams[0] == 1003) {
+        if (commandParams[1] == 1) {
+          displayText = "suction cup enable";
+        } else if (commandParams[1] == 0) {
+          displayText = "suction cup disable";
+        }
+      }
+      switch (i) {
+        case 0:
+          t400.setText(displayText.c_str());
+          break;
+        case 1:
+          t401.setText(displayText.c_str());
+          break;
+        case 2:
+          t402.setText(displayText.c_str());
+          break;
+        case 3:
+          t403.setText(displayText.c_str());
+          break;
+        case 4:
+          t404.setText(displayText.c_str());
+          break;
+        case 5:
+          t405.setText(displayText.c_str());
+          break;
+        case 6:
+          t406.setText(displayText.c_str());
+          break;
+        case 7:
+          t407.setText(displayText.c_str());
+          break;
+        case 8:
+          t408.setText(displayText.c_str());
+          break;
+        case 9:
+          t409.setText(displayText.c_str());
+          break;
+      }
+    }
+    return;
   }
+  return;
 }
 
 void setup() {
@@ -884,15 +1030,16 @@ void loop() {
   //142279
   for (;;) {
     nexLoop(nex_listen_list);
+    //queue.printQueue();
     timer = millis();
     int nextCommandIndex = queue.getNextInQueueIndex();
     int *nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams[0];
-    /*Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
-    Serial.print("timer: ");
-    Serial.print(timer);
-    Serial.print(" delayTime: ");
-    Serial.println(delayTime);*/
+    //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
+    //Serial.print("timer: ");
+    //Serial.print(timer);
+    //Serial.print(" delayTime: ");
+    //Serial.println(delayTime);
     if (timer >= delayTime) {
       switch (nextCommand) {
         //command is empty
@@ -907,13 +1054,9 @@ void loop() {
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           delayTime = millis() + nextCommandParams[4];
-          displayText = String((gPTPCmd.x), 1);
-          t100.setText(displayText.c_str());
-          displayText = String((gPTPCmd.y), 1);
-          t103.setText(displayText.c_str());
-          displayText = String((gPTPCmd.z), 1);
-          t106.setText(displayText.c_str());
-
+          if(currentPage == 1 || currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
           break;
         //this is the command to move the dobot in the negative direction, parameters determine to where
         case 1002:
@@ -930,6 +1073,9 @@ void loop() {
           t103.setText(displayText.c_str());
           displayText = String((gPTPCmd.z), 1);
           t106.setText(displayText.c_str());
+          if(currentPage == 1 || currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
           break;
         //this command enables or disables the suction cup, dependant on the parameters
         case 1003:
@@ -942,10 +1088,13 @@ void loop() {
             queue.removeFromQueue(nextCommandIndex);
             delayTime = millis() + nextCommandParams[4];
           }
+          if(currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
           break;
       }
     }
     ProtocolProcess();
-    delay(1000);
+    //delay(10);
   }
 }
