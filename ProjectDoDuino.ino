@@ -204,16 +204,12 @@ NexTouch *nex_listen_list[] = {
   NULL
 };
 
-class node {
-public:
-  int command;
-  int pArraySize;
-  int pArray[4] = { 9999, 9999, 9999, 9999 };
-  //constructs the head
-  node() {
-    command = 9999;
-    pArraySize = 4;
-  }
+struct params {
+  int command = 9999;
+  int param1 = 9999;
+  int param2 = 9999;
+  int param3 = 9999;
+  int waitTime = 0;
 };
 
 class cmdQueue {
@@ -226,7 +222,7 @@ class cmdQueue {
   //current length of the queue
   int currentLength;
   //pointer to the location of the first item in the queue
-  node queue[10];
+  params queue[10];
 
 public:
   //constuctor for queue
@@ -234,19 +230,18 @@ public:
     addIndex = 1;
   }
 
-  void addToQueue(int command, int p[]) {
+  void addToQueue(params newParameters) {
     if (queue[maxLength - 1].command == 9999) {
       for (int i = (maxLength - 1); i >= 0; i--) {
         if (i != 0) {
           queue[i].command = queue[i - 1].command;
-          for (int j = 0; j <= 3; j++) {
-            queue[i].pArray[j] = queue[i - 1].pArray[j];
-          }
+          queue[i].param1 = queue[i - 1].param1;
+          queue[i].param2 = queue[i - 1].param2;
+          queue[i].param3 = queue[i - 1].param3;
+          queue[i].waitTime = queue[i - 1].waitTime;
+
         } else {
-          queue[i].command = command;
-          for (int j = 0; j <= 3; j++) {
-            queue[i].pArray[j] = p[j];
-          }
+          queue[i] = newParameters;
         }
       }
     }
@@ -254,9 +249,10 @@ public:
 
   void removeFromQueue(int index) {
     queue[index].command = 9999;
-    for (int j = 0; j <= 3; j++) {
-      queue[index].pArray[j] = 9999;
-    }
+    queue[index].param1 = 9999;
+    queue[index].param2 = 9999;
+    queue[index].param3 = 9999;
+    queue[index].waitTime = 0;
   }
 
   int getNextInQueueIndex() {
@@ -271,8 +267,16 @@ public:
   }
 
 
-  int *getNextInQueueValues() {
-    int *nextInQueueValueArray = new int[5];
+  params getNextInQueueValues() {
+    params parameters;
+    for (int i = (maxLength - 1); i >= 0; i--) {
+      if (queue[i].command != 9999) {
+        parameters = queue[i];
+        break;
+      }
+    }
+    return parameters;
+    /*int *nextInQueueValueArray = new int[5];
     for (int i = 0; i <= 5; i++) {
       nextInQueueValueArray[i] = 9999;
     }
@@ -285,20 +289,15 @@ public:
         break;
       }
     }
-    return nextInQueueValueArray;
+    return nextInQueueValueArray;*/
   }
 
-  int *getQueueValuesOfIndex(int index) {
-    int *nextInQueueValueArray = new int[5];
-    nextInQueueValueArray[0] = queue[index].command;
-    for (int j = 1; j <= 4; j++) {
-      nextInQueueValueArray[j] = queue[index].pArray[j - 1];
-    }
-    return nextInQueueValueArray;
+  params getQueueValuesOfIndex(int index) {
+    return queue[index];
   }
 
   void setDelayTime(int index, int value) {
-    queue[index].pArray[3] = value;
+    queue[index].waitTime = value;
   }
 
   void compressQueue() {
@@ -321,11 +320,12 @@ public:
     for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
       int currentQueueIndex = emptySlots[emptySlotsIndex];
       while (!(currentQueueIndex >= maxLength - 1) && !(queue[currentQueueIndex + 1].command == 9999)) {
-        queue[currentQueueIndex].command = queue[currentQueueIndex + 1].command;
+        queue[currentQueueIndex] = queue[currentQueueIndex + 1];
         queue[currentQueueIndex + 1].command = 9999;
-        for (int parameterArray = 0; parameterArray <= 3; parameterArray++) {
-          queue[currentQueueIndex].pArray[parameterArray] = queue[currentQueueIndex + 1].pArray[parameterArray];
-        }
+        queue[currentQueueIndex + 1].param1 = 9999;
+        queue[currentQueueIndex + 1].param2 = 9999;
+        queue[currentQueueIndex + 1].param3 = 9999;
+        queue[currentQueueIndex + 1].waitTime = 0;
         currentQueueIndex++;
       }
     }
@@ -341,13 +341,13 @@ public:
       Serial.print("Command: ");
       Serial.print(queue[i].command);
       Serial.print("; parameters: ");
-      Serial.print(queue[i].pArray[0]);
+      Serial.print(queue[i].param1);
       Serial.print(", ");
-      Serial.print(queue[i].pArray[1]);
+      Serial.print(queue[i].param2);
       Serial.print(", ");
-      Serial.print(queue[i].pArray[2]);
-      Serial.print(", ");
-      Serial.print(queue[i].pArray[3]);
+      Serial.print(queue[i].param3);
+      Serial.print(", wait time: ");
+      Serial.print(queue[i].waitTime);
       Serial.println(";");
     }
     Serial.println("=================================");
@@ -400,42 +400,72 @@ commands:
 //button event handlers
 void b100PopEventHandler(void *ptr) {
   //Serial.println("button b100 (move Dobot in +X Direction | [+X]) pressed");
-  int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  params newParams;
+  newParams.command = 1001;
+  newParams.param1 = moveIncrement;
+  newParams.param2 = 0;
+  newParams.param3 = 0;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 
 void b101PopEventHandler(void *ptr) {
   //Serial.println("button b101 (move Dobot in -X Direction | [-X]) pressed");
-  int params[4] = { moveIncrement, 0, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1002, params);
+  params newParams;
+  newParams.command = 1002;
+  newParams.param1 = moveIncrement;
+  newParams.param2 = 0;
+  newParams.param3 = 0;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 
 void b102PopEventHandler(void *ptr) {
   //Serial.println("button b102 (move Dobot in +Y Direction | [+Y]) pressed");
-  int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  params newParams;
+  newParams.command = 1001;
+  newParams.param1 = 0;
+  newParams.param2 = moveIncrement;
+  newParams.param3 = 0;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 
 void b103PopEventHandler(void *ptr) {
   //Serial.println("button b103 (move Dobot in -Y Direction | [-Y]) pressed");
-  int params[4] = { 0, moveIncrement, 0, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1002, params);
+  params newParams;
+  newParams.command = 1002;
+  newParams.param1 = 0;
+  newParams.param2 = moveIncrement;
+  newParams.param3 = 0;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 
 void b104PopEventHandler(void *ptr) {
   //Serial.println("button b104 (move Dobot in +Z Direction | [+Z]) pressed");
-  int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1001, params);
+  params newParams;
+  newParams.command = 1001;
+  newParams.param1 = 0;
+  newParams.param2 = 0;
+  newParams.param3 = moveIncrement;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 void b105PopEventHandler(void *ptr) {
   //Serial.println("button b105 (move Dobot in -Z Direction | [-Z]) pressed");
-  int params[4] = { 0, 0, moveIncrement, (moveIncrement * 10) + 500 };
-  queue.addToQueue(1002, params);
+  params newParams;
+  newParams.command = 1002;
+  newParams.param1 = 0;
+  newParams.param2 = 0;
+  newParams.param3 = moveIncrement;
+  newParams.waitTime = (moveIncrement * 10) + 500;
+  queue.addToQueue(newParams);
   queue.printQueue();
 }
 
@@ -555,8 +585,14 @@ void b409PopEventHandler(void *ptr) {
 
 void b600PopEventHandler(void *ptr) {
   //Serial.println("button b600 pressed");
-  int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
-  queue.addToQueue(1001, params);
+  params newParams;
+  newParams.command = 1002;
+  newParams.param1 = 67;
+  newParams.param2 = 2;
+  newParams.param3 = 42;
+  newParams.waitTime = 500;
+  queue.addToQueue(newParams);
+  //int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
   Serial.println(gPTPCmd.x);
   Serial.println(gPTPCmd.y);
   Serial.println(gPTPCmd.z);
@@ -569,12 +605,22 @@ void bt100PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt100.getValue(&dual_state);
   if (dual_state) {
-    int params[4] = { 1, 0, 0, 100 };
-    queue.addToQueue(1003, params);
+    params newParams;
+    newParams.command = 1003;
+    newParams.param1 = 1;
+    newParams.param2 = 0;
+    newParams.param3 = 0;
+    newParams.waitTime = 100;
+    queue.addToQueue(newParams);
     Serial.println("on");
   } else {
-    int params[4] = { 0, 0, 0, 100 };
-    queue.addToQueue(1003, params);
+    params newParams;
+    newParams.command = 1003;
+    newParams.param1 = 0;
+    newParams.param2 = 0;
+    newParams.param3 = 0;
+    newParams.waitTime = 100;
+    queue.addToQueue(newParams);
     Serial.println("off");
   }
   //Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
@@ -815,29 +861,29 @@ void updateScreen() {
     return;
   } else if (currentPage == 4) {
     for (int i = 0; i < 10; i++) {
-      int *commandParams = queue.getQueueValuesOfIndex(i);
-      if (commandParams[0] == 9999) {
+      params commandParams = queue.getQueueValuesOfIndex(i);
+      if (commandParams.command == 9999) {
         displayText = "empty";
-      } else if (commandParams[0] = 1001) {
-        if (commandParams[1] != 0) {
-          displayText = "move +X by: " + String(commandParams[0]);
-        } else if (commandParams[2] != 0) {
-          displayText = "move +Y by: " + String(commandParams[1]);
-        } else if (commandParams[3] != 0) {
-          displayText = "move +Z by: " + String(commandParams[2]);
+      } else if (commandParams.command = 1001) {
+        if (commandParams.param1 != 0) {
+          displayText = "move +X by: " + String(commandParams.param1);
+        } else if (commandParams.param2 != 0) {
+          displayText = "move +Y by: " + String(commandParams.param2);
+        } else if (commandParams.param3 != 0) {
+          displayText = "move +Z by: " + String(commandParams.param3);
         }
-      } else if (commandParams[0] = 1002) {
-        if (commandParams[1] != 0) {
-          displayText = "move -X by: " + String(commandParams[0]);
-        } else if (commandParams[2] != 0) {
-          displayText = "move -Y by: " + String(commandParams[1]);
-        } else if (commandParams[3] != 0) {
-          displayText = "move -Z by: " + String(commandParams[2]);
+      } else if (commandParams.command = 1002) {
+        if (commandParams.param1 != 0) {
+          displayText = "move -X by: " + String(commandParams.param1);
+        } else if (commandParams.param2 != 0) {
+          displayText = "move -Y by: " + String(commandParams.param2);
+        } else if (commandParams.param3 != 0) {
+          displayText = "move -Z by: " + String(commandParams.param3);
         }
-      } else if (commandParams[0] == 1003) {
-        if (commandParams[1] == 1) {
+      } else if (commandParams.command == 1003) {
+        if (commandParams.param1 == 1) {
           displayText = "suction cup enable";
-        } else if (commandParams[1] == 0) {
+        } else if (commandParams.param1 == 0) {
           displayText = "suction cup disable";
         }
       }
@@ -1021,6 +1067,33 @@ void loop() {
   ProtocolProcess();
   delay(1000);
   page6.show();
+  cmdQueue cmdsQueue;
+  params params1;
+  params params2;
+  params1.command = 100;
+  params1.param1 = 200;
+  params1.param2 = 300;
+  params1.param3 = 400;
+  params1.waitTime = 500;
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params2);
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params1);
+  cmdsQueue.addToQueue(params2);
+  cmdsQueue.addToQueue(params2);
+  cmdsQueue.addToQueue(params2);
+  cmdsQueue.printQueue();
+  Serial.println("original queue");
+  cmdsQueue.compressQueue();
+  Serial.println("compressed queue");
+  cmdsQueue.printQueue();
+  int nextCommandIndex = queue.getNextInQueueIndex();
+  queue.removeFromQueue(nextCommandIndex);
+  cmdsQueue.printQueue();
+
   while (homed != 1) {
     nexLoop(nex_listen_list);
     delay(10);
@@ -1031,20 +1104,32 @@ void loop() {
   for (;;) {
     nexLoop(nex_listen_list);
     //queue.printQueue();
+
     timer = millis();
     int nextCommandIndex = queue.getNextInQueueIndex();
-    int *nextCommandParams = queue.getNextInQueueValues();
-    int nextCommand = nextCommandParams[0];
-    if (nextCommandParams[4] == 9999) {
-      nextCommandParams[4] = 0;
-    }
+    params nextCommandParams;
+    nextCommandParams = queue.getNextInQueueValues();
+    int nextCommand = nextCommandParams.command;
+
+
     //error handling, sometimes command = 0
-    if(nextCommand == 9999 || nextCommand == 1001 || nextCommand == 1002 || nextCommand == 1003) {
+    if (nextCommand == 9999 || nextCommand == 1001 || nextCommand == 1002 || nextCommand == 1003) {
     } else {
       queue.printQueue();
       Serial.println("error");
       Serial.println(queue.getNextInQueueIndex());
+      Serial.println("params:");
+      int nextIndex = queue.getNextInQueueIndex();
+      params errorParams;
+      errorParams = queue.getQueueValuesOfIndex(nextIndex);
+      Serial.println(errorParams.command);
+      Serial.println(errorParams.param1);
+      Serial.println(errorParams.param2);
+      Serial.println(errorParams.param3);
+      Serial.println(errorParams.waitTime);
     }
+
+
     //Serial.print("delay time: ");Serial.println(nextCommandParams[4]);
     //Serial.print("timer: ");
     //Serial.print(timer);
@@ -1063,26 +1148,26 @@ void loop() {
         break;
       //this is the command to move the dobot in the positive direction, parameters determine to where
       case 1001:
-        gPTPCmd.x += nextCommandParams[1];
-        gPTPCmd.y += nextCommandParams[2];
-        gPTPCmd.z += nextCommandParams[3];
+        gPTPCmd.x += nextCommandParams.param1;
+        gPTPCmd.y += nextCommandParams.param2;
+        gPTPCmd.z += nextCommandParams.param3;
         gPTPCmd.r += 0;
         SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         queue.removeFromQueue(nextCommandIndex);
-        delayTime = millis() + nextCommandParams[4];
+        delayTime = millis() + nextCommandParams.waitTime;
         if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
           updateScreen();
         }
         break;
       //this is the command to move the dobot in the negative direction, parameters determine to where
       case 1002:
-        gPTPCmd.x -= nextCommandParams[1];
-        gPTPCmd.y -= nextCommandParams[2];
-        gPTPCmd.z -= nextCommandParams[3];
+        gPTPCmd.x += nextCommandParams.param1;
+        gPTPCmd.y += nextCommandParams.param2;
+        gPTPCmd.z += nextCommandParams.param3;
         gPTPCmd.r -= 0;
         SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         queue.removeFromQueue(nextCommandIndex);
-        delayTime = millis() + nextCommandParams[4];
+        delayTime = millis() + nextCommandParams.waitTime;
         displayText = String((gPTPCmd.x), 1);
         t100.setText(displayText.c_str());
         displayText = String((gPTPCmd.y), 1);
@@ -1095,14 +1180,14 @@ void loop() {
         break;
       //this command enables or disables the suction cup, dependant on the parameters
       case 1003:
-        if (nextCommandParams[1] == 1) {
+        if (nextCommandParams.param1 == 1) {
           SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
-          delayTime = millis() + nextCommandParams[4];
-        } else if (nextCommandParams[1] == 0) {
+          delayTime = millis() + nextCommandParams.waitTime;
+        } else if (nextCommandParams.param1 == 0) {
           SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
-          delayTime = millis() + nextCommandParams[4];
+          delayTime = millis() + nextCommandParams.waitTime;
         }
         if (currentPage == 2 || currentPage == 4) {
           updateScreen();
@@ -1110,7 +1195,7 @@ void loop() {
         break;
     }
     ProtocolProcess();
-    while (!(millis() >= (timer + nextCommandParams[4]))) {
+    while (!(millis() >= (timer + nextCommandParams.waitTime))) {
       nexLoop(nex_listen_list);
       Serial.println("WAITING");
     }
