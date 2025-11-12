@@ -276,20 +276,6 @@ public:
       }
     }
     return parameters;
-    /*int *nextInQueueValueArray = new int[5];
-    for (int i = 0; i <= 5; i++) {
-      nextInQueueValueArray[i] = 9999;
-    }
-    for (int i = (maxLength - 1); i >= 0; i--) {
-      if (queue[i].command != 9999) {
-        nextInQueueValueArray[0] = queue[i].command;
-        for (int j = 1; j <= 4; j++) {
-          nextInQueueValueArray[j] = queue[i].pArray[j - 1];
-        }
-        break;
-      }
-    }
-    return nextInQueueValueArray;*/
   }
 
   params getQueueValuesOfIndex(int index) {
@@ -1161,9 +1147,9 @@ void loop() {
         break;
       //this is the command to move the dobot in the negative direction, parameters determine to where
       case 1002:
-        gPTPCmd.x += nextCommandParams.param1;
-        gPTPCmd.y += nextCommandParams.param2;
-        gPTPCmd.z += nextCommandParams.param3;
+        gPTPCmd.x -= nextCommandParams.param1;
+        gPTPCmd.y -= nextCommandParams.param2;
+        gPTPCmd.z -= nextCommandParams.param3;
         gPTPCmd.r -= 0;
         SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         queue.removeFromQueue(nextCommandIndex);
