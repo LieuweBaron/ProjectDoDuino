@@ -32,6 +32,7 @@ bool homed = 0;
 int currX = 0;
 int currY = 0;
 int currZ = 0;
+int suction = 0;
 
 float moveIncrement = 0;
 int currentPage = 1;
@@ -208,96 +209,6 @@ NexTouch *nex_listen_list[] = {
   NULL
 };
 
-struct point {
-  int x = 9999;
-  int y = 9999;
-  int z = 9999;
-  int waitTime = 0;
-  bool suction = 0;
-};
-
-class savedRoute {
-  point route[8];
-  int routeLength = 8;
-  int addIndex = 0;
-public:
-  savedRoute() {
-    point defaultPos;
-    defaultPos.x = 122;
-    defaultPos.y = -2;
-    defaultPos.z = -42;
-    defaultPos.suction = 0;
-    route[0] = defaultPos;
-    route[7] = defaultPos;
-    addIndex = 1;
-  }
-
-  void addPoint(int x, int y, int z, bool suction) {
-    if (addIndex != 6) {
-      route[addIndex].x = x;
-      route[addIndex].y = y;
-      route[addIndex].z = z;
-      route[addIndex].suction = suction;
-      route[addIndex].waitTime = 1000;
-    }
-  }
-
-  void removePoint(int index) {
-    route[index].x = 9999;
-    route[index].y = 9999;
-    route[index].z = 9999;
-    route[index].waitTime = 0;
-    route[index].suction = 0;
-  }
-
-  void compressRoute() {
-    int emptySlots[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
-    int totalEmpty = 0;
-    //find the indexes at which a slot is empty (9999)
-    for (int routeIndex = 1; routeIndex < (routeLength - 2); routeIndex++) {
-      if (route[routeIndex].x == 9999) {
-        for (int emptySlotsIndex = 0; emptySlotsIndex < 9; emptySlotsIndex++) {
-          if (emptySlots[emptySlotsIndex] == 9999) {
-            emptySlots[emptySlotsIndex] = routeIndex;
-            totalEmpty++;
-            break;
-          }
-        }
-      }
-    }
-    //move empty slots to the back of the route, starting with the highest index empty slot
-    //this is achieved by swapping with the next item in the route until either the end or another empty slot (9999) is found
-    for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
-      int currentRouteIndex = emptySlots[emptySlotsIndex] + 1;
-      while (!(currentRouteIndex >= routeLength - 2) && !(route[currentRouteIndex + 1].x == 9999)) {
-        route[currentRouteIndex] = route[currentRouteIndex + 1];
-        route[currentRouteIndex + 1].x = 9999;
-        route[currentRouteIndex + 1].y = 9999;
-        route[currentRouteIndex + 1].z = 9999;
-        route[currentRouteIndex + 1].waitTime = 0;
-        route[currentRouteIndex + 1].suction = 0;
-        currentRouteIndex++;
-      }
-    }
-  }
-
-  //push route to queue
-  void executeRoute() {
-  }
-
-  void saveRouteToEEPROM(int routeNumber) {
-  }
-
-  void getRouteFromEEPROM(int routeNumber) {
-  }
-};
-
-savedRoute tempRoute;
-savedRoute route1;
-savedRoute route2;
-savedRoute route3;
-savedRoute route4;
-
 struct params {
   int command = 9999;
   int param1 = 9999;
@@ -436,6 +347,165 @@ public:
 
 cmdQueue queue;
 
+struct point {
+  int x = 9999;
+  int y = 9999;
+  int z = 9999;
+  int waitTime = 0;
+  int suction = 0;
+};
+
+class savedRoute {
+  point route[8];
+  int routeLength = 8;
+  int addIndex = 0;
+public:
+  savedRoute() {
+    point defaultPos;
+    defaultPos.x = 122;
+    defaultPos.y = -2;
+    defaultPos.z = -42;
+    defaultPos.suction = 0;
+    route[0] = defaultPos;
+    route[7] = defaultPos;
+    addIndex = 1;
+  }
+
+  void addPoint(int x, int y, int z, int suction) {
+    if (!(addIndex >= 7)) {
+      route[addIndex].x = x;
+      route[addIndex].y = y;
+      route[addIndex].z = z;
+      route[addIndex].suction = suction;
+      route[addIndex].waitTime = 1000;
+      Serial.print("addIndex: ");
+      Serial.println(addIndex);
+      addIndex += 1;
+    } else {
+      Serial.println("route full");
+    }
+  }
+
+  void removePoint(int index) {
+    route[index].x = 9999;
+    route[index].y = 9999;
+    route[index].z = 9999;
+    route[index].waitTime = 0;
+    route[index].suction = 0;
+    addIndex -= 1;
+  }
+
+  void compressRoute() {
+    int emptySlots[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
+    int totalEmpty = 0;
+    //find the indexes at which a slot is empty (9999)
+    for (int routeIndex = 1; routeIndex < (routeLength - 2); routeIndex++) {
+      if (route[routeIndex].x == 9999) {
+        for (int emptySlotsIndex = 0; emptySlotsIndex < 9; emptySlotsIndex++) {
+          if (emptySlots[emptySlotsIndex] == 9999) {
+            emptySlots[emptySlotsIndex] = routeIndex;
+            totalEmpty++;
+            break;
+          }
+        }
+      }
+    }
+    //move empty slots to the back of the route, starting with the highest index empty slot
+    //this is achieved by swapping with the next item in the route until either the end or another empty slot (9999) is found
+    for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
+      int currentRouteIndex = emptySlots[emptySlotsIndex] + 1;
+      while (!(currentRouteIndex >= routeLength - 2) && !(route[currentRouteIndex + 1].x == 9999)) {
+        route[currentRouteIndex] = route[currentRouteIndex + 1];
+        route[currentRouteIndex + 1].x = 9999;
+        route[currentRouteIndex + 1].y = 9999;
+        route[currentRouteIndex + 1].z = 9999;
+        route[currentRouteIndex + 1].waitTime = 0;
+        route[currentRouteIndex + 1].suction = 0;
+        currentRouteIndex++;
+      }
+    }
+  }
+
+  //push route to queue
+  void executeRoute() {
+    for(int i = 0; i <= 7; i++) {
+      params parameters1;
+      params parameters2;
+      parameters1.command = 3001;
+      parameters1.param1 = route[i].x;
+      parameters1.param2 = route[i].y;
+      parameters1.param3 = route[i].z;
+      parameters1.waitTime = route[i].waitTime;
+
+      parameters2.command = 3003;
+      parameters2.param1 = route[i].suction;
+      parameters2.waitTime = route[i].waitTime;
+
+      queue.addToQueue(parameters1); 
+      queue.addToQueue(parameters2); 
+    }
+  }
+
+  void saveRouteToEEPROM(int routeNumber) {
+    if(routeNumber == 1) {
+
+    } else if(routeNumber == 2) {
+
+    } else if(routeNumber == 3) {
+
+    } else if(routeNumber == 4) {
+
+    }
+  }
+
+  void getRouteFromEEPROM(int routeNumber) {
+    if(routeNumber == 1) {
+
+    } else if(routeNumber == 2) {
+
+    } else if(routeNumber == 3) {
+
+    } else if(routeNumber == 4) {
+
+    }
+
+  }
+
+  void printRoute() {
+    Serial.println("=========================================");
+    for(int i = 0; i <= 7; i++) {
+      Serial.print("point ");
+      Serial.print(i);
+      Serial.print(": x: ");
+      Serial.print(route[i].x);
+      Serial.print(", y: ");
+      Serial.print(route[i].y);
+      Serial.print(", z: ");
+      Serial.print(route[i].z);
+      Serial.print(", suction: ");
+      Serial.print(route[i].suction);
+      Serial.print(", wait time: ");
+      Serial.print(route[i].waitTime);
+      Serial.println(";");
+    }
+    Serial.println("=========================================");
+  }
+};
+
+savedRoute tempRoute;
+savedRoute route1;
+savedRoute route2;
+savedRoute route3;
+savedRoute route4;
+
+void suck(bool suckIt) {
+  if(suckIt == true)  {
+    digitalWrite(30, HIGH);
+  } else if(suckIt == false) {
+    digitalWrite(30, LOW);
+  }
+}
+
 //page change event handlers
 void page1PushEventHandler(void *ptr) {
   //Serial.println("Page 1");
@@ -551,46 +621,71 @@ void b105PopEventHandler(void *ptr) {
 
 void b200PopEventHandler(void *ptr) {
   //Serial.println("button b200 (add point to trajectory | [Add Point To Trajecory]) pressed");
+  tempRoute.addPoint(gPTPCmd.x, gPTPCmd.y, gPTPCmd.z, suction);
+  tempRoute.printRoute();
 }
 
 void b201PopEventHandler(void *ptr) {
   //Serial.println("button b201 (save trajectory to route 1 | [Save Route 1]) pressed");
+  tempRoute.saveRouteToEEPROM(1);
 }
 
 void b202PopEventHandler(void *ptr) {
   //Serial.println("button b202 (save trajectory to route 2 | [Save Route 2]) pressed");
+  tempRoute.saveRouteToEEPROM(2);
 }
 
 void b203PopEventHandler(void *ptr) {
   //Serial.println("button b203 (save trajectory to route 3 | [Save Route 3]) pressed");
+  tempRoute.saveRouteToEEPROM(3);
 }
 
 void b204PopEventHandler(void *ptr) {
   //Serial.println("button b204 (save trajectory to route 4 | [Save Route 4]) pressed");
+  tempRoute.saveRouteToEEPROM(4);
 }
 
 void b205PopEventHandler(void *ptr) {
   //Serial.println("button b205 (remove point 2 in trajectory | [X]) pressed");
+  tempRoute.removePoint(1);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
+
 }
 
 void b206PopEventHandler(void *ptr) {
   //Serial.println("button b206 (remove point 3 in trajectory | [X]) pressed");
+  tempRoute.removePoint(2);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
 }
 
 void b207PopEventHandler(void *ptr) {
   //Serial.println("button b207 (remove point 4 in trajectory | [X]) pressed");
+  tempRoute.removePoint(3);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
 }
 
 void b208PopEventHandler(void *ptr) {
   //Serial.println("button b208 (remove point 5 in trajectory | [X]) pressed");
+  tempRoute.removePoint(4);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
 }
 
 void b209PopEventHandler(void *ptr) {
   //Serial.println("button b209 (remove point 6 in trajectory | [X]) pressed");
+  tempRoute.removePoint(5);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
 }
 
 void b210PopEventHandler(void *ptr) {
   //Serial.println("button b210 (remove point 7 in trajectory | [X]) pressed");
+  tempRoute.removePoint(6);
+  tempRoute.compressRoute();
+  tempRoute.printRoute();
 }
 
 void b400PopEventHandler(void *ptr) {
@@ -696,7 +791,9 @@ void bt100PopEventHandler(void *ptr) {
     newParams.param3 = 0;
     newParams.waitTime = 100;
     queue.addToQueue(newParams);
+    suction = 1;
     Serial.println("on");
+
   } else {
     params newParams;
     newParams.command = 1003;
@@ -705,6 +802,7 @@ void bt100PopEventHandler(void *ptr) {
     newParams.param3 = 0;
     newParams.waitTime = 100;
     queue.addToQueue(newParams);
+    suction = 0;
     Serial.println("off");
   }
   //Serial.println("button bt100 (enable/disable suction cup | [Suction Cup]) pressed");
@@ -947,32 +1045,32 @@ bool outOfBounds(int x, int y, int z) {
   // Base rotation
   float baseAngle = atan2(y, x) * (180.0 / 3.1415);
   if (!(baseAngle <= 90 && baseAngle >= -90)) {
-    Serial.print("baseAngle: ");
-    Serial.print(baseAngle);
-    Serial.print(", x: ");
-    Serial.print(x);
-    Serial.print(", y: ");
-    Serial.print(y);
+    //Serial.print("baseAngle: ");
+    //Serial.print(baseAngle);
+    //Serial.print(", x: ");
+    //Serial.print(x);
+    //Serial.print(", y: ");
+    //Serial.print(y);
     Serial.println(", out of bounds");
     return false;
   }
   if (z > 170 || z < -140) {
-    Serial.print("z: ");
-    Serial.println(z);
+    //Serial.print("z: ");
+    //Serial.println(z);
     Serial.println("out of bounds");
     return false;
   }
   double length = sqrt(pow(x, 2) + pow(y, 2));  //line to position of the endpoint in 2d plane
-  Serial.print("length: ");
-  Serial.println(length);
+  //Serial.print("length: ");
+  //Serial.println(length);
   //if l between bounds then valid move
   for (int i = 0; i <= 31; i++) {
     if (bounds[i][0] == z) {
       if (length >= bounds[i][1] && length <= bounds[i][2]) {
-        Serial.println("for loop in bounds");
+        Serial.println("in bounds");
         return true;
       } else {
-        Serial.println("for loop out of bounds");
+        Serial.println("out of bounds");
         return false;
       }
     }
@@ -1131,6 +1229,11 @@ void setup() {
   bt311.attachPop(bt311PopEventHandler, &bt311);
   //updateScreen();
   page5.show();
+
+  pinMode(30, OUTPUT); // relais output for sucking
+  pinMode(32, OUTPUT); // power for sensor
+  pinMode(33, INPUT);  // input for sensor
+
 }
 
 void Serialread() {
@@ -1224,85 +1327,85 @@ void loop() {
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
     currentTime = millis();
-    //if ((currentTime - previousTime) >= delayTime) {
-    switch (nextCommand) {
-      //command is empty
-      case 9999:
-        delayTime = 0;
-        previousTime = currentTime;
-        break;
-      //this is the command to move the dobot in the positive direction, parameters determine to where
-      case 1001:
-        if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
-          queue.removeFromQueue(nextCommandIndex);
-          Serial.println("out of bounds");
+    if ((currentTime - previousTime) >= delayTime) {
+      switch (nextCommand) {
+        //command is empty
+        case 9999:
+          delayTime = 0;
+          previousTime = currentTime;
           break;
-        } else {
-          gPTPCmd.x += nextCommandParams.param1;
-          gPTPCmd.y += nextCommandParams.param2;
-          gPTPCmd.z += nextCommandParams.param3;
-          gPTPCmd.r += 0;
-          //currX += nextCommandParams.param1;
-          //currY += nextCommandParams.param2;
-          //currZ += nextCommandParams.param3;
-          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-          queue.removeFromQueue(nextCommandIndex);
-          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+        //this is the command to move the dobot in the positive direction, parameters determine to where
+        case 1001:
+          if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
+            queue.removeFromQueue(nextCommandIndex);
+            Serial.println("out of bounds");
+            break;
+          } else {
+            gPTPCmd.x += nextCommandParams.param1;
+            gPTPCmd.y += nextCommandParams.param2;
+            gPTPCmd.z += nextCommandParams.param3;
+            gPTPCmd.r += 0;
+            //currX += nextCommandParams.param1;
+            //currY += nextCommandParams.param2;
+            //currZ += nextCommandParams.param3;
+            SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
+            if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+              updateScreen();
+            }
+            delayTime = nextCommandParams.waitTime;
+            previousTime = currentTime;
+            ProtocolProcess();
+            break;
+          }
+        //this is the command to move the dobot in the negative direction, parameters determine to where
+        case 1002:
+          if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
+            queue.removeFromQueue(nextCommandIndex);
+            Serial.println("main loop out of bounds");
+            break;
+          } else {
+            gPTPCmd.x -= nextCommandParams.param1;
+            gPTPCmd.y -= nextCommandParams.param2;
+            gPTPCmd.z -= nextCommandParams.param3;
+            gPTPCmd.r -= 0;
+            //currX += nextCommandParams.param1;
+            //currY += nextCommandParams.param2;
+            //currZ += nextCommandParams.param3;
+            SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
+            displayText = String((gPTPCmd.x), 1);
+            t100.setText(displayText.c_str());
+            displayText = String((gPTPCmd.y), 1);
+            t103.setText(displayText.c_str());
+            displayText = String((gPTPCmd.z), 1);
+            t106.setText(displayText.c_str());
+            if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+              updateScreen();
+            }
+            delayTime = nextCommandParams.waitTime;
+            previousTime = currentTime;
+            ProtocolProcess();
+            break;
+          }
+        //this command enables or disables the suction cup, dependant on the parameters
+        case 1003:
+          if (nextCommandParams.param1 == 1) {
+            SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
+          } else if (nextCommandParams.param1 == 0) {
+            SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+            queue.removeFromQueue(nextCommandIndex);
+          }
+          if (currentPage == 2 || currentPage == 4) {
             updateScreen();
           }
           delayTime = nextCommandParams.waitTime;
           previousTime = currentTime;
           ProtocolProcess();
           break;
-        }
-      //this is the command to move the dobot in the negative direction, parameters determine to where
-      case 1002:
-        if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
-          queue.removeFromQueue(nextCommandIndex);
-          Serial.println("main loop out of bounds");
-          break;
-        } else {
-          gPTPCmd.x -= nextCommandParams.param1;
-          gPTPCmd.y -= nextCommandParams.param2;
-          gPTPCmd.z -= nextCommandParams.param3;
-          gPTPCmd.r -= 0;
-          //currX += nextCommandParams.param1;
-          //currY += nextCommandParams.param2;
-          //currZ += nextCommandParams.param3;
-          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-          queue.removeFromQueue(nextCommandIndex);
-          displayText = String((gPTPCmd.x), 1);
-          t100.setText(displayText.c_str());
-          displayText = String((gPTPCmd.y), 1);
-          t103.setText(displayText.c_str());
-          displayText = String((gPTPCmd.z), 1);
-          t106.setText(displayText.c_str());
-          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
-            updateScreen();
-          }
-          delayTime = nextCommandParams.waitTime;
-          previousTime = currentTime;
-          ProtocolProcess();
-          break;
-        }
-      //this command enables or disables the suction cup, dependant on the parameters
-      case 1003:
-        if (nextCommandParams.param1 == 1) {
-          SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-          queue.removeFromQueue(nextCommandIndex);
-        } else if (nextCommandParams.param1 == 0) {
-          SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-          queue.removeFromQueue(nextCommandIndex);
-        }
-        if (currentPage == 2 || currentPage == 4) {
-          updateScreen();
-        }
-        delayTime = nextCommandParams.waitTime;
-        previousTime = currentTime;
-        ProtocolProcess();
-        break;
+      }
     }
-    //}
     delay(201);
   }
 }
