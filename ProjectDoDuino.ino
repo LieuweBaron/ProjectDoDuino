@@ -487,7 +487,7 @@ void b100PopEventHandler(void *ptr) {
   newParams.param3 = 0;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 
 void b101PopEventHandler(void *ptr) {
@@ -499,7 +499,7 @@ void b101PopEventHandler(void *ptr) {
   newParams.param3 = 0;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 
 void b102PopEventHandler(void *ptr) {
@@ -511,7 +511,7 @@ void b102PopEventHandler(void *ptr) {
   newParams.param3 = 0;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 
 void b103PopEventHandler(void *ptr) {
@@ -523,7 +523,7 @@ void b103PopEventHandler(void *ptr) {
   newParams.param3 = 0;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 
 void b104PopEventHandler(void *ptr) {
@@ -535,7 +535,7 @@ void b104PopEventHandler(void *ptr) {
   newParams.param3 = moveIncrement;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 void b105PopEventHandler(void *ptr) {
   //Serial.println("button b105 (move Dobot in -Z Direction | [-Z]) pressed");
@@ -546,7 +546,7 @@ void b105PopEventHandler(void *ptr) {
   newParams.param3 = moveIncrement;
   newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
-  queue.printQueue();
+  //queue.printQueue();
 }
 
 void b200PopEventHandler(void *ptr) {
@@ -672,9 +672,9 @@ void b600PopEventHandler(void *ptr) {
   newParams.param3 = 42;
   newParams.waitTime = 500;
   queue.addToQueue(newParams);
-  currX = 189;
-  currY = 0;
-  currZ = 0;
+  //currX = 189;
+  //currY = 0;
+  //currZ = 0;
   //int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
   //Serial.println(gPTPCmd.x);
   //Serial.println(gPTPCmd.y);
@@ -929,13 +929,19 @@ int bounds[32][3] = {
 };
 
 bool outOfBounds(int x, int y, int z) {
-  if(z >= 0) {
-    z = floor(z/10) * 10;
+  Serial.print("x: ");
+  Serial.print(x);
+  Serial.print(", y: ");
+  Serial.print(y);
+  Serial.print(", z: ");
+  Serial.println(z);
+  if (z >= 0) {
+    z = floor(z / 10) * 10;
     Serial.print("z: ");
     Serial.println(z);
   } else if (z < 0) {
     Serial.print("z: ");
-    z = ceil(z/10) * 10;
+    z = ceil(z / 10) * 10;
     Serial.println(z);
   }
   // Base rotation
@@ -950,23 +956,23 @@ bool outOfBounds(int x, int y, int z) {
     Serial.println(", out of bounds");
     return false;
   }
-  if(z > 170 || z < -140) {\
+  if (z > 170 || z < -140) {
     Serial.print("z: ");
     Serial.println(z);
     Serial.println("out of bounds");
     return false;
   }
-  float length = sqrt((x * x) + (y * y));  //line to position of the endpoint in 2d plane
-  Serial.print("length");
+  double length = sqrt(pow(x, 2) + pow(y, 2));  //line to position of the endpoint in 2d plane
+  Serial.print("length: ");
   Serial.println(length);
   //if l between bounds then valid move
   for (int i = 0; i <= 31; i++) {
     if (bounds[i][0] == z) {
       if (length >= bounds[i][1] && length <= bounds[i][2]) {
-        Serial.println("in bounds");
+        Serial.println("for loop in bounds");
         return true;
       } else {
-        Serial.println("out of bounds");
+        Serial.println("for loop out of bounds");
         return false;
       }
     }
@@ -1227,7 +1233,7 @@ void loop() {
         break;
       //this is the command to move the dobot in the positive direction, parameters determine to where
       case 1001:
-        if (outOfBounds(currX + nextCommandParams.param1, currY + nextCommandParams.param2, currZ + nextCommandParams.param3) == false) {
+        if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
           Serial.println("out of bounds");
           break;
@@ -1236,9 +1242,9 @@ void loop() {
           gPTPCmd.y += nextCommandParams.param2;
           gPTPCmd.z += nextCommandParams.param3;
           gPTPCmd.r += 0;
-          currX += nextCommandParams.param1;
-          currY += nextCommandParams.param2;
-          currZ += nextCommandParams.param3;
+          //currX += nextCommandParams.param1;
+          //currY += nextCommandParams.param2;
+          //currZ += nextCommandParams.param3;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
@@ -1251,14 +1257,18 @@ void loop() {
         }
       //this is the command to move the dobot in the negative direction, parameters determine to where
       case 1002:
-        if (outOfBounds(currX - nextCommandParams.param1, currY - nextCommandParams.param2, currZ - nextCommandParams.param3) == true) {
+        if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("main loop out of bounds");
+          break;
+        } else {
           gPTPCmd.x -= nextCommandParams.param1;
           gPTPCmd.y -= nextCommandParams.param2;
           gPTPCmd.z -= nextCommandParams.param3;
           gPTPCmd.r -= 0;
-          currX += nextCommandParams.param1;
-          currY += nextCommandParams.param2;
-          currZ += nextCommandParams.param3;
+          //currX += nextCommandParams.param1;
+          //currY += nextCommandParams.param2;
+          //currZ += nextCommandParams.param3;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           displayText = String((gPTPCmd.x), 1);
@@ -1273,10 +1283,6 @@ void loop() {
           delayTime = nextCommandParams.waitTime;
           previousTime = currentTime;
           ProtocolProcess();
-          break;
-        } else {
-          queue.removeFromQueue(nextCommandIndex);
-          Serial.println("out of bounds");
           break;
         }
       //this command enables or disables the suction cup, dependant on the parameters
