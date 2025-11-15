@@ -29,6 +29,9 @@ uint32_t delayTime = 0;
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 bool homed = 0;
+int currX = 0;
+int currY = 0;
+int currZ = 0;
 
 float moveIncrement = 0;
 int currentPage = 1;
@@ -240,7 +243,7 @@ public:
   }
 
   void removePoint(int index) {
-    route[index].x = 9999; 
+    route[index].x = 9999;
     route[index].y = 9999;
     route[index].z = 9999;
     route[index].waitTime = 0;
@@ -280,15 +283,12 @@ public:
 
   //push route to queue
   void executeRoute() {
-
   }
 
   void saveRouteToEEPROM(int routeNumber) {
-
   }
 
   void getRouteFromEEPROM(int routeNumber) {
-
   }
 };
 
@@ -667,15 +667,19 @@ void b600PopEventHandler(void *ptr) {
   //Serial.println("button b600 pressed");
   params newParams;
   newParams.command = 1002;
-  newParams.param1 = 29;  //67
-  newParams.param2 = 0;   //2
-  newParams.param3 = 0;   //42
+  newParams.param1 = 67;
+  newParams.param2 = 2;
+  newParams.param3 = 42;
   newParams.waitTime = 500;
   queue.addToQueue(newParams);
+  currX = 189;
+  currY = 0;
+  currZ = 0;
   //int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
-  Serial.println(gPTPCmd.x);
-  Serial.println(gPTPCmd.y);
-  Serial.println(gPTPCmd.z);
+  //Serial.println(gPTPCmd.x);
+  //Serial.println(gPTPCmd.y);
+  //Serial.println(gPTPCmd.z);
+
   homed = 1;
 }
 
@@ -890,8 +894,8 @@ void bt311PopEventHandler(void *ptr) {
 }
 
 int bounds[32][3] = {
-  { 170, 140, 170 },  
-  { 160, 140, 200 },  
+  { 170, 140, 170 },
+  { 160, 140, 200 },
   { 150, 140, 210 },
   { 140, 140, 220 },
   { 130, 140, 230 },
@@ -925,18 +929,44 @@ int bounds[32][3] = {
 };
 
 bool outOfBounds(int x, int y, int z) {
+  if(z >= 0) {
+    z = floor(z/10) * 10;
+    Serial.print("z: ");
+    Serial.println(z);
+  } else if (z < 0) {
+    Serial.print("z: ");
+    z = ceil(z/10) * 10;
+    Serial.println(z);
+  }
   // Base rotation
   float baseAngle = atan2(y, x) * (180.0 / 3.1415);
   if (!(baseAngle <= 90 && baseAngle >= -90)) {
+    Serial.print("baseAngle: ");
+    Serial.print(baseAngle);
+    Serial.print(", x: ");
+    Serial.print(x);
+    Serial.print(", y: ");
+    Serial.print(y);
+    Serial.println(", out of bounds");
     return false;
   }
-  float length = sqrt(x * x + y * y);  //line to position of the endpoint in 2d plane
+  if(z > 170 || z < -140) {\
+    Serial.print("z: ");
+    Serial.println(z);
+    Serial.println("out of bounds");
+    return false;
+  }
+  float length = sqrt((x * x) + (y * y));  //line to position of the endpoint in 2d plane
+  Serial.print("length");
+  Serial.println(length);
   //if l between bounds then valid move
-  for (int i = 0; i <= 30; i++) {
+  for (int i = 0; i <= 31; i++) {
     if (bounds[i][0] == z) {
       if (length >= bounds[i][1] && length <= bounds[i][2]) {
+        Serial.println("in bounds");
         return true;
       } else {
+        Serial.println("out of bounds");
         return false;
       }
     }
@@ -1197,40 +1227,58 @@ void loop() {
         break;
       //this is the command to move the dobot in the positive direction, parameters determine to where
       case 1001:
-        gPTPCmd.x += nextCommandParams.param1;
-        gPTPCmd.y += nextCommandParams.param2;
-        gPTPCmd.z += nextCommandParams.param3;
-        gPTPCmd.r += 0;
-        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        queue.removeFromQueue(nextCommandIndex);
-        if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
-          updateScreen();
+        if (outOfBounds(currX + nextCommandParams.param1, currY + nextCommandParams.param2, currZ + nextCommandParams.param3) == false) {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("out of bounds");
+          break;
+        } else {
+          gPTPCmd.x += nextCommandParams.param1;
+          gPTPCmd.y += nextCommandParams.param2;
+          gPTPCmd.z += nextCommandParams.param3;
+          gPTPCmd.r += 0;
+          currX += nextCommandParams.param1;
+          currY += nextCommandParams.param2;
+          currZ += nextCommandParams.param3;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
+          delayTime = nextCommandParams.waitTime;
+          previousTime = currentTime;
+          ProtocolProcess();
+          break;
         }
-        delayTime = nextCommandParams.waitTime;
-        previousTime = currentTime;
-        ProtocolProcess();
-        break;
       //this is the command to move the dobot in the negative direction, parameters determine to where
       case 1002:
-        gPTPCmd.x -= nextCommandParams.param1;
-        gPTPCmd.y -= nextCommandParams.param2;
-        gPTPCmd.z -= nextCommandParams.param3;
-        gPTPCmd.r -= 0;
-        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        queue.removeFromQueue(nextCommandIndex);
-        displayText = String((gPTPCmd.x), 1);
-        t100.setText(displayText.c_str());
-        displayText = String((gPTPCmd.y), 1);
-        t103.setText(displayText.c_str());
-        displayText = String((gPTPCmd.z), 1);
-        t106.setText(displayText.c_str());
-        if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
-          updateScreen();
+        if (outOfBounds(currX - nextCommandParams.param1, currY - nextCommandParams.param2, currZ - nextCommandParams.param3) == true) {
+          gPTPCmd.x -= nextCommandParams.param1;
+          gPTPCmd.y -= nextCommandParams.param2;
+          gPTPCmd.z -= nextCommandParams.param3;
+          gPTPCmd.r -= 0;
+          currX += nextCommandParams.param1;
+          currY += nextCommandParams.param2;
+          currZ += nextCommandParams.param3;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          displayText = String((gPTPCmd.x), 1);
+          t100.setText(displayText.c_str());
+          displayText = String((gPTPCmd.y), 1);
+          t103.setText(displayText.c_str());
+          displayText = String((gPTPCmd.z), 1);
+          t106.setText(displayText.c_str());
+          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
+          delayTime = nextCommandParams.waitTime;
+          previousTime = currentTime;
+          ProtocolProcess();
+          break;
+        } else {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("out of bounds");
+          break;
         }
-        delayTime = nextCommandParams.waitTime;
-        previousTime = currentTime;
-        ProtocolProcess();
-        break;
       //this command enables or disables the suction cup, dependant on the parameters
       case 1003:
         if (nextCommandParams.param1 == 1) {
