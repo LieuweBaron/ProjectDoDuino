@@ -29,6 +29,7 @@ uint32_t delayTime = 0;
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 bool homed = 0;
+bool sensorState = false;
 int currX = 0;
 int currY = 0;
 int currZ = 0;
@@ -77,23 +78,10 @@ NexButton b201 = NexButton(1, 4, "b201");   //button that saves trajectory to ro
 NexButton b202 = NexButton(1, 5, "b202");   //button that saves trajectory to route 2, page 2
 NexButton b203 = NexButton(1, 6, "b203");   //button that saves trajectory to route 3, page 2
 NexButton b204 = NexButton(1, 7, "b204");   //button that saves trajectory to route 4, page 2
-NexButton b205 = NexButton(1, 25, "b205");  //button that removes point 2 in the trajectory, page 2
-NexButton b206 = NexButton(1, 22, "b206");  //button that removes point 3 in the trajectory, page 2
-NexButton b207 = NexButton(1, 23, "b207");  //button that removes point 4 in the trajectory, page 2
-NexButton b208 = NexButton(1, 26, "b208");  //button that removes point 5 in the trajectory, page 2
-NexButton b209 = NexButton(1, 27, "b209");  //button that removes point 6 in the trajectory, page 2
+NexButton b205 = NexButton(1, 22, "b205");  //button that removes point in the trajectory, page 2
 NexButton b210 = NexButton(1, 28, "b210");  //button that removes point 7 in the trajectory, page 2
 
-NexButton b400 = NexButton(3, 11, "b400");  //button that removes element 0 out of the queue, page 4
-NexButton b401 = NexButton(3, 12, "b401");  //button that removes element 1 out of the queue, page 4
-NexButton b402 = NexButton(3, 13, "b402");  //button that removes element 2 out of the queue, page 4
-NexButton b403 = NexButton(3, 14, "b403");  //button that removes element 3 out of the queue, page 4
-NexButton b404 = NexButton(3, 15, "b404");  //button that removes element 4 out of the queue, page 4
-NexButton b405 = NexButton(3, 16, "b405");  //button that removes element 5 out of the queue, page 4
-NexButton b406 = NexButton(3, 17, "b406");  //button that removes element 6 out of the queue, page 4
-NexButton b407 = NexButton(3, 18, "b407");  //button that removes element 7 out of the queue, page 4
-NexButton b408 = NexButton(3, 19, "b408");  //button that removes element 8 out of the queue, page 4
-NexButton b409 = NexButton(3, 20, "b409");  //button that removes element 9 out of the queue, page 4
+NexButton b400 = NexButton(3, 2, "b400");  //button that stops route from executing, page 4
 
 NexButton b600 = NexButton(5, 2, "b600");  //button that homing has been completed by the user, page 6
 
@@ -140,16 +128,7 @@ NexText t210 = NexText(1, 19, "t210");  //point 6 in trajectory, page 2
 NexText t211 = NexText(1, 20, "t211");  //point 7 in trajectory, page 2
 NexText t212 = NexText(1, 21, "t212");  //point 8 in trajectory (end point), page 2
 
-NexText t400 = NexText(3, 1, "t400");   //queue element 0, page 4
-NexText t401 = NexText(3, 2, "t401");   //queue element 1, page 4
-NexText t402 = NexText(3, 3, "t402");   //queue element 2, page 4
-NexText t403 = NexText(3, 4, "t403");   //queue element 3, page 4
-NexText t404 = NexText(3, 5, "t404");   //queue element 4, page 4
-NexText t405 = NexText(3, 6, "t405");   //queue element 5, page 4
-NexText t406 = NexText(3, 7, "t406");   //queue element 6, page 4
-NexText t407 = NexText(3, 8, "t407");   //queue element 7, page 4
-NexText t408 = NexText(3, 9, "t408");   //queue element 8, page 4
-NexText t409 = NexText(3, 10, "t409");  //queue element 9, page 4
+NexText t400 = NexText(3, 1, "t400");  //queue element 0, page 4
 
 NexTouch *nex_listen_list[] = {
   &page1,
@@ -171,21 +150,7 @@ NexTouch *nex_listen_list[] = {
   &b203,
   &b204,
   &b205,
-  &b206,
-  &b207,
-  &b208,
-  &b209,
-  &b210,
   &b400,
-  &b401,
-  &b402,
-  &b403,
-  &b404,
-  &b405,
-  &b406,
-  &b407,
-  &b408,
-  &b409,
   &b600,
 
   &bt100,
@@ -386,49 +351,18 @@ public:
     }
   }
 
-  void removePoint(int index) {
-    route[index].x = 9999;
-    route[index].y = 9999;
-    route[index].z = 9999;
-    route[index].waitTime = 0;
-    route[index].suction = 0;
+  void removeLastAddedPoint() {
     addIndex -= 1;
-  }
-
-  void compressRoute() {
-    int emptySlots[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
-    int totalEmpty = 0;
-    //find the indexes at which a slot is empty (9999)
-    for (int routeIndex = 1; routeIndex < (routeLength - 2); routeIndex++) {
-      if (route[routeIndex].x == 9999) {
-        for (int emptySlotsIndex = 0; emptySlotsIndex < 9; emptySlotsIndex++) {
-          if (emptySlots[emptySlotsIndex] == 9999) {
-            emptySlots[emptySlotsIndex] = routeIndex;
-            totalEmpty++;
-            break;
-          }
-        }
-      }
-    }
-    //move empty slots to the back of the route, starting with the highest index empty slot
-    //this is achieved by swapping with the next item in the route until either the end or another empty slot (9999) is found
-    for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
-      int currentRouteIndex = emptySlots[emptySlotsIndex] + 1;
-      while (!(currentRouteIndex >= routeLength - 2) && !(route[currentRouteIndex + 1].x == 9999)) {
-        route[currentRouteIndex] = route[currentRouteIndex + 1];
-        route[currentRouteIndex + 1].x = 9999;
-        route[currentRouteIndex + 1].y = 9999;
-        route[currentRouteIndex + 1].z = 9999;
-        route[currentRouteIndex + 1].waitTime = 0;
-        route[currentRouteIndex + 1].suction = 0;
-        currentRouteIndex++;
-      }
-    }
+    route[addIndex].x = 9999;
+    route[addIndex].y = 9999;
+    route[addIndex].z = 9999;
+    route[addIndex].waitTime = 0;
+    route[addIndex].suction = 0;
   }
 
   //push route to queue
   void executeRoute() {
-    for(int i = 0; i <= 7; i++) {
+    for (int i = 0; i <= 7; i++) {
       params parameters1;
       params parameters2;
       parameters1.command = 3001;
@@ -441,39 +375,36 @@ public:
       parameters2.param1 = route[i].suction;
       parameters2.waitTime = route[i].waitTime;
 
-      queue.addToQueue(parameters1); 
-      queue.addToQueue(parameters2); 
+      queue.addToQueue(parameters1);
+      queue.addToQueue(parameters2);
     }
   }
 
   void saveRouteToEEPROM(int routeNumber) {
-    if(routeNumber == 1) {
+    if (routeNumber == 1) {
 
-    } else if(routeNumber == 2) {
+    } else if (routeNumber == 2) {
 
-    } else if(routeNumber == 3) {
+    } else if (routeNumber == 3) {
 
-    } else if(routeNumber == 4) {
-
+    } else if (routeNumber == 4) {
     }
   }
 
   void getRouteFromEEPROM(int routeNumber) {
-    if(routeNumber == 1) {
+    if (routeNumber == 1) {
 
-    } else if(routeNumber == 2) {
+    } else if (routeNumber == 2) {
 
-    } else if(routeNumber == 3) {
+    } else if (routeNumber == 3) {
 
-    } else if(routeNumber == 4) {
-
+    } else if (routeNumber == 4) {
     }
-
   }
 
   void printRoute() {
     Serial.println("=========================================");
-    for(int i = 0; i <= 7; i++) {
+    for (int i = 0; i <= 7; i++) {
       Serial.print("point ");
       Serial.print(i);
       Serial.print(": x: ");
@@ -499,10 +430,19 @@ savedRoute route3;
 savedRoute route4;
 
 void suck(bool suckIt) {
-  if(suckIt == true)  {
+  if (suckIt == true) {
     digitalWrite(30, HIGH);
-  } else if(suckIt == false) {
+  } else if (suckIt == false) {
     digitalWrite(30, LOW);
+  }
+}
+
+void detectSensor() {
+  int sensorDetects = digitalRead(33);
+  if(sensorDetects == 1 && sensorState != true) {
+    sensorState = true;
+  } else if(sensorDetects == 0 && sensorState != false) {
+    sensorState = false;
   }
 }
 
@@ -646,116 +586,12 @@ void b204PopEventHandler(void *ptr) {
 }
 
 void b205PopEventHandler(void *ptr) {
-  //Serial.println("button b205 (remove point 2 in trajectory | [X]) pressed");
-  tempRoute.removePoint(1);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
-
-}
-
-void b206PopEventHandler(void *ptr) {
-  //Serial.println("button b206 (remove point 3 in trajectory | [X]) pressed");
-  tempRoute.removePoint(2);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
-}
-
-void b207PopEventHandler(void *ptr) {
-  //Serial.println("button b207 (remove point 4 in trajectory | [X]) pressed");
-  tempRoute.removePoint(3);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
-}
-
-void b208PopEventHandler(void *ptr) {
-  //Serial.println("button b208 (remove point 5 in trajectory | [X]) pressed");
-  tempRoute.removePoint(4);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
-}
-
-void b209PopEventHandler(void *ptr) {
-  //Serial.println("button b209 (remove point 6 in trajectory | [X]) pressed");
-  tempRoute.removePoint(5);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
-}
-
-void b210PopEventHandler(void *ptr) {
-  //Serial.println("button b210 (remove point 7 in trajectory | [X]) pressed");
-  tempRoute.removePoint(6);
-  tempRoute.compressRoute();
-  tempRoute.printRoute();
+  //Serial.println("button b205 (remove point  in trajectory | [Remove point from trajectory]) pressed");
+  tempRoute.removeLastAddedPoint();
 }
 
 void b400PopEventHandler(void *ptr) {
-  //Serial.println("button b400 (remove element 0 out of queue | [X]) pressed");
-  queue.removeFromQueue(0);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b401PopEventHandler(void *ptr) {
-  //Serial.println("button b401 (remove element 1 out of queue | [X]) pressed");
-  queue.removeFromQueue(1);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b402PopEventHandler(void *ptr) {
-  //Serial.println("button b402 (remove element 2 out of queue | [X]) pressed");
-  queue.removeFromQueue(2);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b403PopEventHandler(void *ptr) {
-  //Serial.println("button b403 (remove element 3 out of queue | [X]) pressed");
-  queue.removeFromQueue(3);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b404PopEventHandler(void *ptr) {
-  //Serial.println("button b404 (remove element 4 out of queue | [X]) pressed");
-  queue.removeFromQueue(4);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b405PopEventHandler(void *ptr) {
-  //Serial.println("button b405 (remove element 5 out of queue | [X]) pressed");
-  queue.removeFromQueue(5);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b406PopEventHandler(void *ptr) {
-  //Serial.println("button b406 (remove element 6 out of queue | [X]) pressed");
-  queue.removeFromQueue(6);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b407PopEventHandler(void *ptr) {
-  //Serial.println("button b407 (remove element 7 out of queue | [X]) pressed");
-  queue.removeFromQueue(7);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b408PopEventHandler(void *ptr) {
-  //Serial.println("button b408 (remove element 8 out of queue | [X]) pressed");
-  queue.removeFromQueue(8);
-  queue.compressQueue();
-  updateScreen();
-}
-
-void b409PopEventHandler(void *ptr) {
-  //Serial.println("button b409 (remove element 9 out of queue | [X]) pressed");
-  queue.removeFromQueue(9);
-  queue.compressQueue();
-  updateScreen();
+  //Serial.println("stop route");
 }
 
 void b600PopEventHandler(void *ptr) {
@@ -1100,70 +936,7 @@ void updateScreen() {
   } else if (currentPage == 3) {
     return;
   } else if (currentPage == 4) {
-    for (int i = 0; i < 10; i++) {
-      params commandParams = queue.getQueueValuesOfIndex(i);
-      if (commandParams.command == 9999) {
-        displayText = "empty";
-      } else if (commandParams.command = 1001) {
-        if (commandParams.param1 != 0) {
-          displayText = "move +X by: " + String(commandParams.param1);
-        } else if (commandParams.param2 != 0) {
-          displayText = "move +Y by: " + String(commandParams.param2);
-        } else if (commandParams.param3 != 0) {
-          displayText = "move +Z by: " + String(commandParams.param3);
-        }
-
-      } else if (commandParams.command = 1002) {
-        if (commandParams.param1 != 0) {
-          displayText = "move -X by: " + String(commandParams.param1);
-        } else if (commandParams.param2 != 0) {
-          displayText = "move -Y by: " + String(commandParams.param2);
-        } else if (commandParams.param3 != 0) {
-          displayText = "move -Z by: " + String(commandParams.param3);
-        }
-      } else if (commandParams.command == 1003) {
-        if (commandParams.param1 == 1) {
-          displayText = "suction cup enable";
-        } else if (commandParams.param1 == 0) {
-          displayText = "suction cup disable";
-        }
-      }
-      switch (i) {
-        case 0:
-          t400.setText(displayText.c_str());
-          break;
-        case 1:
-          t401.setText(displayText.c_str());
-          break;
-        case 2:
-          t402.setText(displayText.c_str());
-          break;
-        case 3:
-          t403.setText(displayText.c_str());
-          break;
-        case 4:
-          t404.setText(displayText.c_str());
-          break;
-        case 5:
-          t405.setText(displayText.c_str());
-          break;
-        case 6:
-          t406.setText(displayText.c_str());
-          break;
-        case 7:
-          t407.setText(displayText.c_str());
-          break;
-        case 8:
-          t408.setText(displayText.c_str());
-          break;
-        case 9:
-          t409.setText(displayText.c_str());
-          break;
-      }
-    }
-    return;
   }
-  return;
 }
 
 void setup() {
@@ -1193,21 +966,7 @@ void setup() {
   b203.attachPop(b203PopEventHandler, &b203);
   b204.attachPop(b204PopEventHandler, &b204);
   b205.attachPop(b205PopEventHandler, &b205);
-  b206.attachPop(b206PopEventHandler, &b206);
-  b207.attachPop(b207PopEventHandler, &b207);
-  b208.attachPop(b208PopEventHandler, &b208);
-  b209.attachPop(b209PopEventHandler, &b209);
-  b210.attachPop(b210PopEventHandler, &b210);
   b400.attachPop(b400PopEventHandler, &b400);
-  b401.attachPop(b401PopEventHandler, &b401);
-  b402.attachPop(b402PopEventHandler, &b402);
-  b403.attachPop(b403PopEventHandler, &b403);
-  b404.attachPop(b404PopEventHandler, &b404);
-  b405.attachPop(b405PopEventHandler, &b405);
-  b406.attachPop(b406PopEventHandler, &b406);
-  b407.attachPop(b407PopEventHandler, &b407);
-  b408.attachPop(b408PopEventHandler, &b408);
-  b409.attachPop(b409PopEventHandler, &b409);
   b600.attachPop(b600PopEventHandler, &b600);
 
   bt100.attachPop(bt100PopEventHandler, &bt100);
@@ -1230,10 +989,10 @@ void setup() {
   //updateScreen();
   page5.show();
 
-  pinMode(30, OUTPUT); // relais output for sucking
-  pinMode(32, OUTPUT); // power for sensor
-  pinMode(33, INPUT);  // input for sensor
-
+  pinMode(30, OUTPUT);  // relais output for sucking
+  pinMode(32, OUTPUT);  // power for sensor
+  pinMode(33, INPUT);   // input for sensor
+  digitalWrite(32, HIGH);
 }
 
 void Serialread() {
@@ -1321,6 +1080,7 @@ void loop() {
   printf("\r\n======Enter application======\r\n");
   page1.show();
   for (;;) {
+    detectSensor();
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
