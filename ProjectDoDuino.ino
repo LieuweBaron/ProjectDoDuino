@@ -376,7 +376,13 @@ public:
 
   void saveRouteToEEPROM(int routeNumber) {
     if (routeNumber == 1) {
-
+      int index = 1;
+      for(int i = 0; i <= 120; i+=20) {
+        point readPoint;
+        EEMPROM.get(i, readPoint);
+        route[index] = readPoint;
+        index++;
+      }
     } else if (routeNumber == 2) {
 
     } else if (routeNumber == 3) {
@@ -387,12 +393,29 @@ public:
 
   void getRouteFromEEPROM(int routeNumber) {
     if (routeNumber == 1) {
-
+      int index = 1;
+      for(int i = 0; i <= 120; i+=20) {
+        EEMPROM.put(i, route[index]);
+        index++;
+      }
     } else if (routeNumber == 2) {
-
+      int index = 1;
+      for(int i = 140; i <= 260; i+=20) {
+        EEMPROM.put(i, route[index]);
+        index++;
+      }
     } else if (routeNumber == 3) {
-
+      int index = 1;
+      for(int i = 280; i <= 400; i+=20) {
+        EEMPROM.put(i, route[index]);
+        index++;
+      }
     } else if (routeNumber == 4) {
+      int index = 1;
+      for(int i = 420; i <= 540; i+=20) {
+        EEMPROM.put(i, route[index]);
+        index++;
+      }
     }
   }
 
@@ -1069,13 +1092,12 @@ void loop() {
   page1.show();
   for (;;) {
     //Serial.println("looping 1");
-    /*
     bool sensorOn = detectSensor();
     if(sensorOn == true) {
       sensorState = 1;
     } else if(sensorOn == false) {
       sensorState = 0;
-    }*/
+    }
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
