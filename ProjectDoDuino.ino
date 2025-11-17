@@ -66,69 +66,63 @@ NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 5, Loadin
 NexPage page6 = NexPage(5, 0, "page6");  //page 0, reffered to as page 6, Homing page
 
 //buttons on nextion screen
-NexButton b100 = NexButton(0, 18, "b100");  //button that moves X in the + direction, page 1
-NexButton b101 = NexButton(0, 19, "b101");  //button that moves X in the - direction, page 1
-NexButton b102 = NexButton(0, 20, "b102");  //button that moves Y in the + direction, page 1
-NexButton b103 = NexButton(0, 21, "b103");  //button that moves Y in the - direction, page 1
-NexButton b104 = NexButton(0, 22, "b104");  //button that moves Z in the + direction, page 1
-NexButton b105 = NexButton(0, 23, "b105");  //button that moves Z in the - direction, page 1
+NexButton b100 = NexButton(0, 17, "b100");  //button that moves X in the + direction, page 1
+NexButton b101 = NexButton(0, 18, "b101");  //button that moves X in the - direction, page 1
+NexButton b102 = NexButton(0, 19, "b102");  //button that moves Y in the + direction, page 1
+NexButton b103 = NexButton(0, 20, "b103");  //button that moves Y in the - direction, page 1
+NexButton b104 = NexButton(0, 21, "b104");  //button that moves Z in the + direction, page 1
+NexButton b105 = NexButton(0, 22, "b105");  //button that moves Z in the - direction, page 1
 
-NexButton b200 = NexButton(1, 24, "b200");  //button that adds new point to trajectory, page 2
+NexButton b200 = NexButton(1, 21, "b200");  //button that adds new point to trajectory, page 2
 NexButton b201 = NexButton(1, 4, "b201");   //button that saves trajectory to route 1, page 2
 NexButton b202 = NexButton(1, 5, "b202");   //button that saves trajectory to route 2, page 2
 NexButton b203 = NexButton(1, 6, "b203");   //button that saves trajectory to route 3, page 2
 NexButton b204 = NexButton(1, 7, "b204");   //button that saves trajectory to route 4, page 2
 NexButton b205 = NexButton(1, 22, "b205");  //button that removes point in the trajectory, page 2
-NexButton b210 = NexButton(1, 28, "b210");  //button that removes point 7 in the trajectory, page 2
 
 NexButton b400 = NexButton(3, 2, "b400");  //button that stops route from executing, page 4
 
 NexButton b600 = NexButton(5, 2, "b600");  //button that homing has been completed by the user, page 6
 
 //dual-state buttons on nextion screen
-NexDSButton bt100 = NexDSButton(0, 24, "bt100");  //enable or disable suction cup
+NexDSButton bt100 = NexDSButton(0, 23, "bt100");  //enable or disable suction cup
 NexDSButton bt101 = NexDSButton(0, 10, "bt101");  //increment of movement: 0.1, page 1
 NexDSButton bt102 = NexDSButton(0, 11, "bt102");  //increment of movement: 1, page 1
 NexDSButton bt103 = NexDSButton(0, 12, "bt103");  //increment of movement: 10, page 1
 NexDSButton bt104 = NexDSButton(0, 13, "bt104");  //increment of movement: 50, page 1
 
-NexDSButton bt300 = NexDSButton(2, 5, "bt300");   //button that activates route 1, page 3
-NexDSButton bt301 = NexDSButton(2, 6, "bt301");   //button that activates route 2, page 3
-NexDSButton bt302 = NexDSButton(2, 7, "bt302");   //button that activates route 3, page 3
-NexDSButton bt303 = NexDSButton(2, 8, "bt303");   //button that activates route 4, page 3
-NexDSButton bt304 = NexDSButton(2, 9, "bt304");   //button that activates detect sensor mode on route 1, page 3
-NexDSButton bt305 = NexDSButton(2, 12, "bt305");  //button that activates detect sensor mode on route 2, page 3
-NexDSButton bt306 = NexDSButton(2, 14, "bt306");  //button that activates detect sensor mode on route 3, page 3
-NexDSButton bt307 = NexDSButton(2, 16, "bt307");  //button that activates detect sensor mode on route 4, page 3
-NexDSButton bt308 = NexDSButton(2, 10, "bt308");  //button that activates repeat mode on route 1, page 3
-NexDSButton bt309 = NexDSButton(2, 11, "bt309");  //button that activates repeat mode on route 2, page 3
-NexDSButton bt310 = NexDSButton(2, 13, "bt310");  //button that activates repeat mode on route 3, page 3
-NexDSButton bt311 = NexDSButton(2, 15, "bt311");  //button that activates repeat mode on route 4, page 3
+NexDSButton bt300 = NexDSButton(2, 4, "bt300");   //button that activates route 1, page 3
+NexDSButton bt301 = NexDSButton(2, 5, "bt301");   //button that activates route 2, page 3
+NexDSButton bt302 = NexDSButton(2, 6, "bt302");   //button that activates route 3, page 3
+NexDSButton bt303 = NexDSButton(2, 7, "bt303");   //button that activates route 4, page 3
+NexDSButton bt304 = NexDSButton(2, 8, "bt304");   //button that activates detect sensor mode on route 1, page 3
+NexDSButton bt305 = NexDSButton(2, 11, "bt305");  //button that activates detect sensor mode on route 2, page 3
+NexDSButton bt306 = NexDSButton(2, 13, "bt306");  //button that activates detect sensor mode on route 3, page 3
+NexDSButton bt307 = NexDSButton(2, 15, "bt307");  //button that activates detect sensor mode on route 4, page 3
+NexDSButton bt308 = NexDSButton(2, 9, "bt308");  //button that activates repeat mode on route 1, page 3
+NexDSButton bt309 = NexDSButton(2, 10, "bt309");  //button that activates repeat mode on route 2, page 3
+NexDSButton bt310 = NexDSButton(2, 12, "bt310");  //button that activates repeat mode on route 3, page 3
+NexDSButton bt311 = NexDSButton(2, 14, "bt311");  //button that activates repeat mode on route 4, page 3
 //text fields on nextion screen
 NexText t100 = NexText(0, 1, "t100");  //current X position, page 1
-NexText t101 = NexText(0, 5, "t101");  //upper bound of the current X limit, page 1
-NexText t102 = NexText(0, 6, "t102");  //lower bount of the current X limit, page 1
 NexText t103 = NexText(0, 2, "t103");  //current Y position, page 1
-NexText t104 = NexText(0, 3, "t104");  //upper bound of the current Y limit, page 1
-NexText t105 = NexText(0, 7, "t105");  //lower bount of the current Y limit, page 1
-NexText t106 = NexText(0, 4, "t106");  //current Z position, page 1
-NexText t107 = NexText(0, 8, "t107");  //upper bound of the current Z limit, page 1
-NexText t108 = NexText(0, 9, "t108");  //lower bount of the current Z limit, page 1
+NexText t106 = NexText(0, 3, "t106");  //current Z position, page 1
+NexText t107 = NexText(0, 18, "t107");  //current Z position, page 1
 
 NexText t200 = NexText(1, 8, "t200");   //current X, page 2
 NexText t201 = NexText(1, 10, "t201");  //current Y, page 2
 NexText t202 = NexText(1, 9, "t202");   //current Z, page 2
 NexText t203 = NexText(1, 11, "t203");  //current SC (suction cup state), page 2
-NexText t205 = NexText(1, 14, "t205");  //point 1 in trajectory (start point), page 2
-NexText t206 = NexText(1, 15, "t206");  //point 2 in trajectory, page 2
-NexText t207 = NexText(1, 16, "t207");  //point 3 in trajectory, page 2
-NexText t208 = NexText(1, 17, "t208");  //point 4 in trajectory, page 2
-NexText t209 = NexText(1, 18, "t209");  //point 5 in trajectory, page 2
-NexText t210 = NexText(1, 19, "t210");  //point 6 in trajectory, page 2
-NexText t211 = NexText(1, 20, "t211");  //point 7 in trajectory, page 2
-NexText t212 = NexText(1, 21, "t212");  //point 8 in trajectory (end point), page 2
+NexText t205 = NexText(1, 13, "t205");  //point 1 in trajectory (start point), page 2
+NexText t206 = NexText(1, 14, "t206");  //point 2 in trajectory, page 2
+NexText t207 = NexText(1, 15, "t207");  //point 3 in trajectory, page 2
+NexText t208 = NexText(1, 16, "t208");  //point 4 in trajectory, page 2
+NexText t209 = NexText(1, 17, "t209");  //point 5 in trajectory, page 2
+NexText t210 = NexText(1, 18, "t210");  //point 6 in trajectory, page 2
+NexText t211 = NexText(1, 19, "t211");  //point 7 in trajectory, page 2
+NexText t212 = NexText(1, 20, "t212");  //point 8 in trajectory (end point), page 2
 
-NexText t400 = NexText(3, 1, "t400");  //queue element 0, page 4
+NexText t400 = NexText(3, 1, "t400");  //route playing
 
 NexTouch *nex_listen_list[] = {
   &page1,
@@ -437,12 +431,12 @@ void suck(bool suckIt) {
   }
 }
 
-void detectSensor() {
+bool detectSensor() {
   int sensorDetects = digitalRead(33);
-  if(sensorDetects == 1 && sensorState != true) {
-    sensorState = true;
-  } else if(sensorDetects == 0 && sensorState != false) {
-    sensorState = false;
+  if(sensorDetects == 1) {
+    return true;
+  } else if(sensorDetects == 0) {
+    return false;
   }
 }
 
@@ -918,18 +912,12 @@ void updateScreen() {
     displayText = String((gPTPCmd.x), 1);
     Serial.println(displayText.c_str());
     t100.setText(displayText.c_str());
-    t101.setText("...");
-    t102.setText("...");
     displayText = String((gPTPCmd.y), 1);
     Serial.println(displayText.c_str());
     t103.setText(displayText.c_str());
-    t104.setText("...");
-    t105.setText("...");
     displayText = String((gPTPCmd.z), 1);
     Serial.println(displayText.c_str());
     t106.setText(displayText.c_str());
-    t107.setText("...");
-    t108.setText("...");
     return;
   } else if (currentPage == 2) {
     return;
@@ -1080,15 +1068,24 @@ void loop() {
   printf("\r\n======Enter application======\r\n");
   page1.show();
   for (;;) {
-    detectSensor();
+    //Serial.println("looping 1");
+    /*
+    bool sensorOn = detectSensor();
+    if(sensorOn == true) {
+      sensorState = 1;
+    } else if(sensorOn == false) {
+      sensorState = 0;
+    }*/
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
+    //Serial.print(nextCommand);
     currentTime = millis();
     if ((currentTime - previousTime) >= delayTime) {
       switch (nextCommand) {
+        //Serial.println("looping 2");
         //command is empty
         case 9999:
           delayTime = 0;
