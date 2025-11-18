@@ -1,9 +1,9 @@
-
 #include "stdio.h"
 #include "Protocol.h"
 #include "command.h"
 #include "FlexiTimer2.h"
 #include <Nextion.h>
+#include <EEPROM.h>
 
 //Set Serial TX&RX Buffer Size
 #define SERIAL_TX_BUFFER_SIZE 64
@@ -34,6 +34,9 @@ int currX = 0;
 int currY = 0;
 int currZ = 0;
 int suction = 0;
+int sensorInUse = 0;
+int loopInUse = 0;
+int currentRoute = 0;
 
 float moveIncrement = 0;
 int currentPage = 1;
@@ -99,14 +102,14 @@ NexDSButton bt304 = NexDSButton(2, 8, "bt304");   //button that activates detect
 NexDSButton bt305 = NexDSButton(2, 11, "bt305");  //button that activates detect sensor mode on route 2, page 3
 NexDSButton bt306 = NexDSButton(2, 13, "bt306");  //button that activates detect sensor mode on route 3, page 3
 NexDSButton bt307 = NexDSButton(2, 15, "bt307");  //button that activates detect sensor mode on route 4, page 3
-NexDSButton bt308 = NexDSButton(2, 9, "bt308");  //button that activates repeat mode on route 1, page 3
+NexDSButton bt308 = NexDSButton(2, 9, "bt308");   //button that activates repeat mode on route 1, page 3
 NexDSButton bt309 = NexDSButton(2, 10, "bt309");  //button that activates repeat mode on route 2, page 3
 NexDSButton bt310 = NexDSButton(2, 12, "bt310");  //button that activates repeat mode on route 3, page 3
 NexDSButton bt311 = NexDSButton(2, 14, "bt311");  //button that activates repeat mode on route 4, page 3
 //text fields on nextion screen
-NexText t100 = NexText(0, 1, "t100");  //current X position, page 1
-NexText t103 = NexText(0, 2, "t103");  //current Y position, page 1
-NexText t106 = NexText(0, 3, "t106");  //current Z position, page 1
+NexText t100 = NexText(0, 1, "t100");   //current X position, page 1
+NexText t103 = NexText(0, 2, "t103");   //current Y position, page 1
+NexText t106 = NexText(0, 3, "t106");   //current Z position, page 1
 NexText t107 = NexText(0, 18, "t107");  //current Z position, page 1
 
 NexText t200 = NexText(1, 8, "t200");   //current X, page 2
@@ -217,6 +220,16 @@ public:
     queue[index].param2 = 9999;
     queue[index].param3 = 9999;
     queue[index].waitTime = 0;
+  }
+
+  void clearQueue() {
+    for (int i = 0; i <= maxLength; i++) {
+      queue[i].command = 9999;
+      queue[i].param1 = 9999;
+      queue[i].param2 = 9999;
+      queue[i].param3 = 9999;
+      queue[i].waitTime = 0;
+    }
   }
 
   int getNextInQueueIndex() {
@@ -365,55 +378,77 @@ public:
       parameters1.param3 = route[i].z;
       parameters1.waitTime = route[i].waitTime;
 
-      parameters2.command = 3003;
+      parameters2.command = 3002;
       parameters2.param1 = route[i].suction;
       parameters2.waitTime = route[i].waitTime;
 
       queue.addToQueue(parameters1);
       queue.addToQueue(parameters2);
     }
+    if (loopInUse == 1) {
+      //push command to execute again to queue
+    }
   }
 
   void saveRouteToEEPROM(int routeNumber) {
     if (routeNumber == 1) {
       int index = 1;
-      for(int i = 0; i <= 120; i+=20) {
+      for (int i = 0; i <= 120; i += 20) {
         point readPoint;
-        EEMPROM.get(i, readPoint);
+        EEPROM.get(i, readPoint);
         route[index] = readPoint;
         index++;
       }
     } else if (routeNumber == 2) {
-
+      int index = 1;
+      for (int i = 140; i <= 260; i += 20) {
+        point readPoint;
+        EEPROM.get(i, readPoint);
+        route[index] = readPoint;
+        index++;
+      }
     } else if (routeNumber == 3) {
-
+      int index = 1;
+      for (int i = 280; i <= 400; i += 20) {
+        point readPoint;
+        EEPROM.get(i, readPoint);
+        route[index] = readPoint;
+        index++;
+      }
     } else if (routeNumber == 4) {
+      int index = 1;
+      for (int i = 420; i <= 540; i += 20) {
+        point readPoint;
+        EEPROM.get(i, readPoint);
+        route[index] = readPoint;
+        index++;
+      }
     }
   }
 
   void getRouteFromEEPROM(int routeNumber) {
     if (routeNumber == 1) {
       int index = 1;
-      for(int i = 0; i <= 120; i+=20) {
-        EEMPROM.put(i, route[index]);
+      for (int i = 0; i <= 120; i += 20) {
+        EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 2) {
       int index = 1;
-      for(int i = 140; i <= 260; i+=20) {
-        EEMPROM.put(i, route[index]);
+      for (int i = 140; i <= 260; i += 20) {
+        EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 3) {
       int index = 1;
-      for(int i = 280; i <= 400; i+=20) {
-        EEMPROM.put(i, route[index]);
+      for (int i = 280; i <= 400; i += 20) {
+        EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 4) {
       int index = 1;
-      for(int i = 420; i <= 540; i+=20) {
-        EEMPROM.put(i, route[index]);
+      for (int i = 420; i <= 540; i += 20) {
+        EEPROM.put(i, route[index]);
         index++;
       }
     }
@@ -456,9 +491,9 @@ void suck(bool suckIt) {
 
 bool detectSensor() {
   int sensorDetects = digitalRead(33);
-  if(sensorDetects == 1) {
+  if (sensorDetects == 1) {
     return true;
-  } else if(sensorDetects == 0) {
+  } else if (sensorDetects == 0) {
     return false;
   }
 }
@@ -722,8 +757,9 @@ void bt301PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt301.getValue(&dual_state);
   if (dual_state) {
-
+    routeNumber = 2;
   } else {
+    routeNumber = 0;
   }
 }
 
@@ -732,8 +768,9 @@ void bt302PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt302.getValue(&dual_state);
   if (dual_state) {
-
+    routeNumber = 3;
   } else {
+    routeNumber = 0;
   }
 }
 
@@ -744,23 +781,9 @@ void bt303PopEventHandler(void *ptr) {
   int count = 0;
   bt303.getValue(&dual_state);
   if (dual_state) {
-    while (dual_state) {
-      nexLoop(nex_listen_list);
-      if (count & 0x01) {
-        SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-        ProtocolProcess();
-        count++;
-        Serial.println("suction cup on");
-        delay(2000);
-      } else {
-        SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-        ProtocolProcess();
-        count++;
-        Serial.println("suction cup off");
-        delay(2000);
-      }
-    }
+    routeNumber = 4;
   } else {
+    routeNumber = 0;
   }
 }
 
@@ -769,8 +792,10 @@ void bt304PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt304.getValue(&dual_state);
   if (dual_state) {
-
+    sensorInUse = 1;
+    loopInUse = 0;
   } else {
+    sensorInUse = 0;
   }
 }
 
@@ -779,8 +804,10 @@ void bt305PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt305.getValue(&dual_state);
   if (dual_state) {
-
+    sensorInUse = 1;
+    loopInUse = 0;
   } else {
+    sensorInUse = 0;
   }
 }
 
@@ -789,8 +816,10 @@ void bt306PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt306.getValue(&dual_state);
   if (dual_state) {
-
+    sensorInUse = 1;
+    loopInUse = 0;
   } else {
+    sensorInUse = 0;
   }
 }
 
@@ -799,8 +828,10 @@ void bt307PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt307.getValue(&dual_state);
   if (dual_state) {
-
+    sensorInUse = 1;
+    loopInUse = 0;
   } else {
+    sensorInUse = 0;
   }
 }
 
@@ -809,8 +840,10 @@ void bt308PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt308.getValue(&dual_state);
   if (dual_state) {
-
+    loopInUse = 1;
+    sensorInUse = 0;
   } else {
+    loopInUse = 0;
   }
 }
 
@@ -819,8 +852,10 @@ void bt309PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt309.getValue(&dual_state);
   if (dual_state) {
-
+    loopInUse = 1;
+    sensorInUse = 0;
   } else {
+    loopInUse = 0;
   }
 }
 
@@ -829,8 +864,10 @@ void bt310PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt310.getValue(&dual_state);
   if (dual_state) {
-
+    loopInUse = 1;
+    sensorInUse = 0;
   } else {
+    loopInUse = 0;
   }
 }
 
@@ -839,8 +876,10 @@ void bt311PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt311.getValue(&dual_state);
   if (dual_state) {
-
+    loopInUse = 1;
+    sensorInUse = 0;
   } else {
+    loopInUse = 0;
   }
 }
 
@@ -1093,10 +1132,13 @@ void loop() {
   for (;;) {
     //Serial.println("looping 1");
     bool sensorOn = detectSensor();
-    if(sensorOn == true) {
+    if (sensorOn == true) {
       sensorState = 1;
-    } else if(sensorOn == false) {
+    } else if (sensorOn == false) {
       sensorState = 0;
+    }
+    if (sensorInUse == 1 && sensorOn == true) {
+      //add route to queue if its not added yet
     }
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
@@ -1105,86 +1147,128 @@ void loop() {
     int nextCommand = nextCommandParams.command;
     //Serial.print(nextCommand);
     currentTime = millis();
-    if ((currentTime - previousTime) >= delayTime) {
-      switch (nextCommand) {
-        //Serial.println("looping 2");
-        //command is empty
-        case 9999:
-          delayTime = 0;
-          previousTime = currentTime;
+    //if ((currentTime - previousTime) >= delayTime) {
+    switch (nextCommand) {
+      //Serial.println("looping 2");
+      //command is empty
+      case 9999:
+        delayTime = 0;
+        previousTime = currentTime;
+        break;
+      //this is the command to move the dobot in the positive direction, parameters determine to where
+      case 1001:
+        if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("out of bounds");
           break;
-        //this is the command to move the dobot in the positive direction, parameters determine to where
-        case 1001:
-          if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
-            queue.removeFromQueue(nextCommandIndex);
-            Serial.println("out of bounds");
-            break;
-          } else {
-            gPTPCmd.x += nextCommandParams.param1;
-            gPTPCmd.y += nextCommandParams.param2;
-            gPTPCmd.z += nextCommandParams.param3;
-            gPTPCmd.r += 0;
-            //currX += nextCommandParams.param1;
-            //currY += nextCommandParams.param2;
-            //currZ += nextCommandParams.param3;
-            SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-            if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
-              updateScreen();
-            }
-            delayTime = nextCommandParams.waitTime;
-            previousTime = currentTime;
-            ProtocolProcess();
-            break;
-          }
-        //this is the command to move the dobot in the negative direction, parameters determine to where
-        case 1002:
-          if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
-            queue.removeFromQueue(nextCommandIndex);
-            Serial.println("main loop out of bounds");
-            break;
-          } else {
-            gPTPCmd.x -= nextCommandParams.param1;
-            gPTPCmd.y -= nextCommandParams.param2;
-            gPTPCmd.z -= nextCommandParams.param3;
-            gPTPCmd.r -= 0;
-            //currX += nextCommandParams.param1;
-            //currY += nextCommandParams.param2;
-            //currZ += nextCommandParams.param3;
-            SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-            displayText = String((gPTPCmd.x), 1);
-            t100.setText(displayText.c_str());
-            displayText = String((gPTPCmd.y), 1);
-            t103.setText(displayText.c_str());
-            displayText = String((gPTPCmd.z), 1);
-            t106.setText(displayText.c_str());
-            if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
-              updateScreen();
-            }
-            delayTime = nextCommandParams.waitTime;
-            previousTime = currentTime;
-            ProtocolProcess();
-            break;
-          }
-        //this command enables or disables the suction cup, dependant on the parameters
-        case 1003:
-          if (nextCommandParams.param1 == 1) {
-            SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-          } else if (nextCommandParams.param1 == 0) {
-            SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
-            queue.removeFromQueue(nextCommandIndex);
-          }
-          if (currentPage == 2 || currentPage == 4) {
+        } else {
+          gPTPCmd.x += nextCommandParams.param1;
+          gPTPCmd.y += nextCommandParams.param2;
+          gPTPCmd.z += nextCommandParams.param3;
+          gPTPCmd.r += 0;
+          //currX += nextCommandParams.param1;
+          //currY += nextCommandParams.param2;
+          //currZ += nextCommandParams.param3;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
             updateScreen();
           }
           delayTime = nextCommandParams.waitTime;
           previousTime = currentTime;
           ProtocolProcess();
+          delay(1000);
           break;
-      }
+        }
+      //this is the command to move the dobot in the negative direction, parameters determine to where
+      case 1002:
+        if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("main loop out of bounds");
+          break;
+        } else {
+          gPTPCmd.x -= nextCommandParams.param1;
+          gPTPCmd.y -= nextCommandParams.param2;
+          gPTPCmd.z -= nextCommandParams.param3;
+          gPTPCmd.r -= 0;
+          //currX += nextCommandParams.param1;
+          //currY += nextCommandParams.param2;
+          //currZ += nextCommandParams.param3;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          displayText = String((gPTPCmd.x), 1);
+          t100.setText(displayText.c_str());
+          displayText = String((gPTPCmd.y), 1);
+          t103.setText(displayText.c_str());
+          displayText = String((gPTPCmd.z), 1);
+          t106.setText(displayText.c_str());
+          if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
+            updateScreen();
+          }
+          delayTime = nextCommandParams.waitTime;
+          previousTime = currentTime;
+          ProtocolProcess();
+          delay(1000);
+          break;
+        }
+      //this command enables or disables the suction cup, dependant on the parameters
+      case 1003:
+        if (nextCommandParams.param1 == 1) {
+          SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+        } else if (nextCommandParams.param1 == 0) {
+          SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+        }
+        if (currentPage == 2 || currentPage == 4) {
+          updateScreen();
+        }
+        delayTime = nextCommandParams.waitTime;
+        previousTime = currentTime;
+        delay(1000);
+        ProtocolProcess();
+        break;
+
+      case 3001:
+        gPTPCmd.x = nextCommandParams.param1;
+        gPTPCmd.y = nextCommandParams.param2;
+        gPTPCmd.z = nextCommandParams.param3;
+        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+        queue.removeFromQueue(nextCommandIndex);
+        ProtocolProcess();
+        delay(1000);
+        break;
+      case 3002:
+        if (nextCommandParams.param1 == 1) {
+          suck(true);
+        } else if (nextCommandParams.param1 == 1) {
+          suck(false);
+        }
+        ProtocolProcess();
+        delay(1000);
+        break;
+      case 3003:
+        switch (currentRoute) {
+          case 1:
+            route1.getRouteFromEEPROM(1);
+            route1.executeRoute();
+            break;
+          case 2:
+            route1.getRouteFromEEPROM(2);
+            route1.executeRoute();
+            break;
+          case 3:
+            route1.getRouteFromEEPROM(3);
+            route1.executeRoute();
+            break;
+          case 4:
+            route1.getRouteFromEEPROM(4);
+            route1.executeRoute();
+            break;
+        }
+        break;
     }
+    //}
     delay(201);
   }
 }
