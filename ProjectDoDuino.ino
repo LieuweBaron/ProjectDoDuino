@@ -176,7 +176,6 @@ struct params {
   int param1 = 9999;
   int param2 = 9999;
   int param3 = 9999;
-  int waitTime = 0;
 };
 
 class cmdQueue {
@@ -205,7 +204,6 @@ public:
           queue[i].param1 = queue[i - 1].param1;
           queue[i].param2 = queue[i - 1].param2;
           queue[i].param3 = queue[i - 1].param3;
-          queue[i].waitTime = queue[i - 1].waitTime;
 
         } else {
           queue[i] = newParameters;
@@ -219,7 +217,6 @@ public:
     queue[index].param1 = 9999;
     queue[index].param2 = 9999;
     queue[index].param3 = 9999;
-    queue[index].waitTime = 0;
   }
 
   void clearQueue() {
@@ -228,7 +225,6 @@ public:
       queue[i].param1 = 9999;
       queue[i].param2 = 9999;
       queue[i].param3 = 9999;
-      queue[i].waitTime = 0;
     }
   }
 
@@ -259,10 +255,6 @@ public:
     return queue[index];
   }
 
-  void setDelayTime(int index, int value) {
-    queue[index].waitTime = value;
-  }
-
   void compressQueue() {
     int emptySlots[10] = { 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999 };
     int totalEmpty = 0;
@@ -288,7 +280,6 @@ public:
         queue[currentQueueIndex + 1].param1 = 9999;
         queue[currentQueueIndex + 1].param2 = 9999;
         queue[currentQueueIndex + 1].param3 = 9999;
-        queue[currentQueueIndex + 1].waitTime = 0;
         currentQueueIndex++;
       }
     }
@@ -309,8 +300,6 @@ public:
       Serial.print(queue[i].param2);
       Serial.print(", ");
       Serial.print(queue[i].param3);
-      Serial.print(", wait time: ");
-      Serial.print(queue[i].waitTime);
       Serial.println(";");
     }
     Serial.println("=================================");
@@ -323,7 +312,6 @@ struct point {
   int x = 9999;
   int y = 9999;
   int z = 9999;
-  int waitTime = 0;
   int suction = 0;
 };
 
@@ -349,7 +337,6 @@ public:
       route[addIndex].y = y;
       route[addIndex].z = z;
       route[addIndex].suction = suction;
-      route[addIndex].waitTime = 1000;
       Serial.print("addIndex: ");
       Serial.println(addIndex);
       addIndex += 1;
@@ -363,7 +350,6 @@ public:
     route[addIndex].x = 9999;
     route[addIndex].y = 9999;
     route[addIndex].z = 9999;
-    route[addIndex].waitTime = 0;
     route[addIndex].suction = 0;
   }
 
@@ -376,11 +362,9 @@ public:
       parameters1.param1 = route[i].x;
       parameters1.param2 = route[i].y;
       parameters1.param3 = route[i].z;
-      parameters1.waitTime = route[i].waitTime;
 
       parameters2.command = 3002;
       parameters2.param1 = route[i].suction;
-      parameters2.waitTime = route[i].waitTime;
 
       queue.addToQueue(parameters1);
       queue.addToQueue(parameters2);
@@ -467,8 +451,6 @@ public:
       Serial.print(route[i].z);
       Serial.print(", suction: ");
       Serial.print(route[i].suction);
-      Serial.print(", wait time: ");
-      Serial.print(route[i].waitTime);
       Serial.println(";");
     }
     Serial.println("=========================================");
@@ -547,7 +529,6 @@ void b100PopEventHandler(void *ptr) {
   newParams.param1 = moveIncrement;
   newParams.param2 = 0;
   newParams.param3 = 0;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -559,7 +540,6 @@ void b101PopEventHandler(void *ptr) {
   newParams.param1 = moveIncrement;
   newParams.param2 = 0;
   newParams.param3 = 0;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -571,7 +551,6 @@ void b102PopEventHandler(void *ptr) {
   newParams.param1 = 0;
   newParams.param2 = moveIncrement;
   newParams.param3 = 0;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -583,7 +562,6 @@ void b103PopEventHandler(void *ptr) {
   newParams.param1 = 0;
   newParams.param2 = moveIncrement;
   newParams.param3 = 0;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -595,7 +573,6 @@ void b104PopEventHandler(void *ptr) {
   newParams.param1 = 0;
   newParams.param2 = 0;
   newParams.param3 = moveIncrement;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -606,7 +583,6 @@ void b105PopEventHandler(void *ptr) {
   newParams.param1 = 0;
   newParams.param2 = 0;
   newParams.param3 = moveIncrement;
-  newParams.waitTime = (moveIncrement * 10) + 500;
   queue.addToQueue(newParams);
   //queue.printQueue();
 }
@@ -653,7 +629,6 @@ void b600PopEventHandler(void *ptr) {
   newParams.param1 = 67;
   newParams.param2 = 2;
   newParams.param3 = 42;
-  newParams.waitTime = 500;
   queue.addToQueue(newParams);
   //currX = 189;
   //currY = 0;
@@ -677,7 +652,6 @@ void bt100PopEventHandler(void *ptr) {
     newParams.param1 = 1;
     newParams.param2 = 0;
     newParams.param3 = 0;
-    newParams.waitTime = 100;
     queue.addToQueue(newParams);
     suction = 1;
     Serial.println("on");
@@ -688,7 +662,6 @@ void bt100PopEventHandler(void *ptr) {
     newParams.param1 = 0;
     newParams.param2 = 0;
     newParams.param3 = 0;
-    newParams.waitTime = 100;
     queue.addToQueue(newParams);
     suction = 0;
     Serial.println("off");
@@ -747,8 +720,9 @@ void bt300PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt300.getValue(&dual_state);
   if (dual_state) {
-
+    currentRoute = 1;
   } else {
+    currentRoute = 0;
   }
 }
 
@@ -757,9 +731,9 @@ void bt301PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt301.getValue(&dual_state);
   if (dual_state) {
-    routeNumber = 2;
+    currentRoute = 2;
   } else {
-    routeNumber = 0;
+    currentRoute = 0;
   }
 }
 
@@ -768,9 +742,9 @@ void bt302PopEventHandler(void *ptr) {
   uint32_t dual_state;
   bt302.getValue(&dual_state);
   if (dual_state) {
-    routeNumber = 3;
+    currentRoute = 3;
   } else {
-    routeNumber = 0;
+    currentRoute = 0;
   }
 }
 
@@ -781,9 +755,9 @@ void bt303PopEventHandler(void *ptr) {
   int count = 0;
   bt303.getValue(&dual_state);
   if (dual_state) {
-    routeNumber = 4;
+    currentRoute = 4;
   } else {
-    routeNumber = 0;
+    currentRoute = 0;
   }
 }
 
@@ -1130,30 +1104,26 @@ void loop() {
   printf("\r\n======Enter application======\r\n");
   page1.show();
   for (;;) {
-    //Serial.println("looping 1");
-    bool sensorOn = detectSensor();
-    if (sensorOn == true) {
-      sensorState = 1;
-    } else if (sensorOn == false) {
-      sensorState = 0;
-    }
-    if (sensorInUse == 1 && sensorOn == true) {
-      //add route to queue if its not added yet
-    }
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
     //Serial.print(nextCommand);
-    currentTime = millis();
     //if ((currentTime - previousTime) >= delayTime) {
+    if(currentRoute != 0 && sensorInUse == 1) {
+      bool sensorOn = detectSensor();
+      if(sensorOn == true) {
+        params routeToActivate;
+        routeToActivate.command = 3004;
+        routeToActivate.param1 = currentRoute;
+        queue.addToQueue(routeToActivate);
+      }
+    }
     switch (nextCommand) {
       //Serial.println("looping 2");
       //command is empty
       case 9999:
-        delayTime = 0;
-        previousTime = currentTime;
         break;
       //this is the command to move the dobot in the positive direction, parameters determine to where
       case 1001:
@@ -1174,8 +1144,6 @@ void loop() {
           if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
             updateScreen();
           }
-          delayTime = nextCommandParams.waitTime;
-          previousTime = currentTime;
           ProtocolProcess();
           delay(1000);
           break;
@@ -1205,8 +1173,6 @@ void loop() {
           if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
             updateScreen();
           }
-          delayTime = nextCommandParams.waitTime;
-          previousTime = currentTime;
           ProtocolProcess();
           delay(1000);
           break;
@@ -1223,8 +1189,6 @@ void loop() {
         if (currentPage == 2 || currentPage == 4) {
           updateScreen();
         }
-        delayTime = nextCommandParams.waitTime;
-        previousTime = currentTime;
         delay(1000);
         ProtocolProcess();
         break;
