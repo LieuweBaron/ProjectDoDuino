@@ -21,18 +21,10 @@ PTPCommonParams gPTPCommonParams;
 PTPCmd gPTPCmd;
 
 uint64_t gQueuedCmdIndex;
-uint32_t timer = 0;
-uint32_t currentTime = 0;
-uint32_t previousTime = 0;
-uint32_t delayTime = 0;
-//if a suction cup is installed on the dobot then the variable is true, if not then the variable is false
 bool suctionCup = true;
 bool suctionCurrentlyOn = false;
 bool homed = 0;
 bool sensorState = false;
-int currX = 0;
-int currY = 0;
-int currZ = 0;
 int suction = 0;
 int sensorInUse = 0;
 int loopInUse = 0;
@@ -1090,7 +1082,6 @@ void loop() {
   SetJOGCoordinateParams(&gJOGCoordinateParams, true, &gQueuedCmdIndex);
   SetJOGCommonParams(&gJOGCommonParams, true, &gQueuedCmdIndex);
   int count = 0;
-  //set the starting position after 5 seconds of the code starting
   delay(5000);
   SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
   ProtocolProcess();
@@ -1101,6 +1092,7 @@ void loop() {
     nexLoop(nex_listen_list);
     delay(10);
   }
+
   printf("\r\n======Enter application======\r\n");
   page1.show();
   for (;;) {
@@ -1109,8 +1101,6 @@ void loop() {
     params nextCommandParams;
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
-    //Serial.print(nextCommand);
-    //if ((currentTime - previousTime) >= delayTime) {
     if(currentRoute != 0 && sensorInUse == 1) {
       bool sensorOn = detectSensor();
       if(sensorOn == true) {
@@ -1121,7 +1111,6 @@ void loop() {
       }
     }
     switch (nextCommand) {
-      //Serial.println("looping 2");
       //command is empty
       case 9999:
         break;
@@ -1136,9 +1125,6 @@ void loop() {
           gPTPCmd.y += nextCommandParams.param2;
           gPTPCmd.z += nextCommandParams.param3;
           gPTPCmd.r += 0;
-          //currX += nextCommandParams.param1;
-          //currY += nextCommandParams.param2;
-          //currZ += nextCommandParams.param3;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           if (currentPage == 1 || currentPage == 2 || currentPage == 4) {
@@ -1159,9 +1145,6 @@ void loop() {
           gPTPCmd.y -= nextCommandParams.param2;
           gPTPCmd.z -= nextCommandParams.param3;
           gPTPCmd.r -= 0;
-          //currX += nextCommandParams.param1;
-          //currY += nextCommandParams.param2;
-          //currZ += nextCommandParams.param3;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           displayText = String((gPTPCmd.x), 1);
@@ -1232,7 +1215,6 @@ void loop() {
         }
         break;
     }
-    //}
     delay(201);
   }
 }
