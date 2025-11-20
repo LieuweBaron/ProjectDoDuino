@@ -21,15 +21,12 @@ PTPCommonParams gPTPCommonParams;
 PTPCmd gPTPCmd;
 
 uint64_t gQueuedCmdIndex;
-bool suctionCup = true;
-bool suctionCurrentlyOn = false;
 bool homed = 0;
 bool sensorState = false;
 int suction = 0;
 int sensorInUse = 0;
 int loopInUse = 0;
 int currentRoute = 0;
-
 float moveIncrement = 0;
 int currentPage = 1;
 //dual state button states
@@ -345,6 +342,12 @@ public:
     route[addIndex].suction = 0;
   }
 
+  String getStringifiedPoint(int index) {
+    point sPoint = route[index];
+    String stringifiedPoint = String((sPoint.x), 1) + "|" + String((sPoint.y), 1) + "|" + String((sPoint.z), 1) + "|" + String((sPoint.suction), 1);
+    return stringifiedPoint; 
+  }
+
   //push route to queue
   void executeRoute() {
     for (int i = 0; i <= 7; i++) {
@@ -611,6 +614,7 @@ void b205PopEventHandler(void *ptr) {
 }
 
 void b400PopEventHandler(void *ptr) {
+  page1.show();
   //Serial.println("stop route");
 }
 
@@ -926,10 +930,50 @@ void updateScreen() {
     t106.setText(displayText.c_str());
     return;
   } else if (currentPage == 2) {
-    return;
-  } else if (currentPage == 3) {
+    displayText = "X: " + String((gPTPCmd.x), 1);
+    t200.setText(displayText.c_str());
+    displayText = "Y: " + String((gPTPCmd.y), 1);
+    t201.setText(displayText.c_str());
+    displayText = "Z: " + String((gPTPCmd.z), 1);
+    t202.setText(displayText.c_str());
+    switch(suction) {
+      case 0:
+        displayText = "SC: False";
+        break;
+      case 1:
+        displayText = "SC: True";
+        break;
+    }
+    t203.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(1);
+    t206.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(2);
+    t207.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(3);
+    t208.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(4);
+    t209.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(5);
+    t210.setText(displayText.c_str());
+    displayText = tempRoute.getStringifiedPoint(6);
+    t211.setText(displayText.c_str());
     return;
   } else if (currentPage == 4) {
+    switch(currentRoute) {
+      case 1:
+        t400.setText("Executing Route: 1");
+        break;
+      case 2:
+        t400.setText("Executing Route: 2");
+        break;
+      case 3:
+        t400.setText("Executing Route: 3");
+        break;
+      case 4:
+        t400.setText("Executing Route: 4");
+        break;
+    }
+    return;
   }
 }
 
@@ -1077,9 +1121,12 @@ void loop() {
     params nextCommandParams;
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
-    if(currentRoute != 0 && sensorInUse == 1) {
+    if (currentRoute != 0 && sensorInUse == 1) {
+      if (currentPage != 4) {
+        page4.show();
+      }
       bool sensorOn = detectSensor();
-      if(sensorOn == true) {
+      if (sensorOn == true) {
         params routeToActivate;
         routeToActivate.command = 3004;
         routeToActivate.param1 = currentRoute;
