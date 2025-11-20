@@ -885,43 +885,21 @@ int bounds[32][3] = {
 };
 
 bool outOfBounds(int x, int y, int z) {
-  Serial.print("x: ");
-  Serial.print(x);
-  Serial.print(", y: ");
-  Serial.print(y);
-  Serial.print(", z: ");
-  Serial.println(z);
   if (z >= 0) {
     z = floor(z / 10) * 10;
-    Serial.print("z: ");
-    Serial.println(z);
   } else if (z < 0) {
-    Serial.print("z: ");
     z = ceil(z / 10) * 10;
-    Serial.println(z);
   }
-  // Base rotation
   float baseAngle = atan2(y, x) * (180.0 / 3.1415);
   if (!(baseAngle <= 90 && baseAngle >= -90)) {
-    //Serial.print("baseAngle: ");
-    //Serial.print(baseAngle);
-    //Serial.print(", x: ");
-    //Serial.print(x);
-    //Serial.print(", y: ");
-    //Serial.print(y);
     Serial.println(", out of bounds");
     return false;
   }
   if (z > 170 || z < -140) {
-    //Serial.print("z: ");
-    //Serial.println(z);
     Serial.println("out of bounds");
     return false;
   }
-  double length = sqrt(pow(x, 2) + pow(y, 2));  //line to position of the endpoint in 2d plane
-  //Serial.print("length: ");
-  //Serial.println(length);
-  //if l between bounds then valid move
+  double length = sqrt(pow(x, 2) + pow(y, 2));
   for (int i = 0; i <= 31; i++) {
     if (bounds[i][0] == z) {
       if (length >= bounds[i][1] && length <= bounds[i][2]) {
@@ -960,7 +938,6 @@ void setup() {
   Serial1.begin(115200);
   Serial2.begin(9600);
   printf_begin();
-  //Set Timer Interrupt
   FlexiTimer2::set(100, Serialread);
   FlexiTimer2::start();
   page1.attachPush(page1PushEventHandler);
@@ -1002,7 +979,6 @@ void setup() {
   bt309.attachPop(bt309PopEventHandler, &bt309);
   bt310.attachPop(bt310PopEventHandler, &bt310);
   bt311.attachPop(bt311PopEventHandler, &bt311);
-  //updateScreen();
   page5.show();
 
   pinMode(30, OUTPUT);  // relais output for sucking
