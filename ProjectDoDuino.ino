@@ -343,9 +343,11 @@ public:
   }
 
   String getStringifiedPoint(int index) {
-    point sPoint = route[index];
-    String stringifiedPoint = String((sPoint.x), 1) + "|" + String((sPoint.y), 1) + "|" + String((sPoint.z), 1) + "|" + String((sPoint.suction), 1);
-    return stringifiedPoint; 
+    String stringifiedPoint = String(route[index].x) + "|" + String(route[index].y) + "|" + String(route[index].z) + "|" + String(route[index].suction);
+    if (stringifiedPoint == "9999|9999|9999|0") {
+      stringifiedPoint = "...";
+    }
+    return stringifiedPoint;
   }
 
   //push route to queue
@@ -369,12 +371,22 @@ public:
     }
   }
 
-  void saveRouteToEEPROM(int routeNumber) {
+  void getRouteFromEEPROM(int routeNumber) {
     if (routeNumber == 1) {
       int index = 1;
       for (int i = 0; i <= 120; i += 20) {
         point readPoint;
         EEPROM.get(i, readPoint);
+        Serial.print("index: ");
+        Serial.print(index);
+        Serial.print(", x: ");
+        Serial.print(readPoint.x);
+        Serial.print(", y: ");
+        Serial.print(readPoint.y);
+        Serial.print(", z: ");
+        Serial.print(readPoint.z);
+        Serial.print(", suction: ");
+        Serial.println(readPoint.suction);
         route[index] = readPoint;
         index++;
       }
@@ -403,9 +415,10 @@ public:
         index++;
       }
     }
+    delay(100);
   }
 
-  void getRouteFromEEPROM(int routeNumber) {
+  void saveRouteToEEPROM(int routeNumber) {
     if (routeNumber == 1) {
       int index = 1;
       for (int i = 0; i <= 120; i += 20) {
@@ -586,31 +599,41 @@ void b200PopEventHandler(void *ptr) {
   //Serial.println("button b200 (add point to trajectory | [Add Point To Trajecory]) pressed");
   tempRoute.addPoint(gPTPCmd.x, gPTPCmd.y, gPTPCmd.z, suction);
   tempRoute.printRoute();
+  updateScreen();
 }
 
 void b201PopEventHandler(void *ptr) {
   //Serial.println("button b201 (save trajectory to route 1 | [Save Route 1]) pressed");
   tempRoute.saveRouteToEEPROM(1);
+  route1.getRouteFromEEPROM(1);
+  route1.printRoute();
 }
 
 void b202PopEventHandler(void *ptr) {
   //Serial.println("button b202 (save trajectory to route 2 | [Save Route 2]) pressed");
   tempRoute.saveRouteToEEPROM(2);
+  route2.getRouteFromEEPROM(2);
+  route2.printRoute();
 }
 
 void b203PopEventHandler(void *ptr) {
   //Serial.println("button b203 (save trajectory to route 3 | [Save Route 3]) pressed");
   tempRoute.saveRouteToEEPROM(3);
+  route3.getRouteFromEEPROM(3);
+  route3.printRoute();
 }
 
 void b204PopEventHandler(void *ptr) {
   //Serial.println("button b204 (save trajectory to route 4 | [Save Route 4]) pressed");
   tempRoute.saveRouteToEEPROM(4);
+  route4.getRouteFromEEPROM(4);
+  route4.printRoute();
 }
 
 void b205PopEventHandler(void *ptr) {
   //Serial.println("button b205 (remove point  in trajectory | [Remove point from trajectory]) pressed");
   tempRoute.removeLastAddedPoint();
+  updateScreen();
 }
 
 void b400PopEventHandler(void *ptr) {
@@ -918,62 +941,63 @@ bool outOfBounds(int x, int y, int z) {
 }
 
 void updateScreen() {
-  if (currentPage == 1) {
-    displayText = String((gPTPCmd.x), 1);
-    Serial.println(displayText.c_str());
-    t100.setText(displayText.c_str());
-    displayText = String((gPTPCmd.y), 1);
-    Serial.println(displayText.c_str());
-    t103.setText(displayText.c_str());
-    displayText = String((gPTPCmd.z), 1);
-    Serial.println(displayText.c_str());
-    t106.setText(displayText.c_str());
-    return;
-  } else if (currentPage == 2) {
-    displayText = "X: " + String((gPTPCmd.x), 1);
-    t200.setText(displayText.c_str());
-    displayText = "Y: " + String((gPTPCmd.y), 1);
-    t201.setText(displayText.c_str());
-    displayText = "Z: " + String((gPTPCmd.z), 1);
-    t202.setText(displayText.c_str());
-    switch(suction) {
-      case 0:
-        displayText = "SC: False";
-        break;
-      case 1:
-        displayText = "SC: True";
-        break;
-    }
-    t203.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(1);
-    t206.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(2);
-    t207.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(3);
-    t208.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(4);
-    t209.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(5);
-    t210.setText(displayText.c_str());
-    displayText = tempRoute.getStringifiedPoint(6);
-    t211.setText(displayText.c_str());
-    return;
-  } else if (currentPage == 4) {
-    switch(currentRoute) {
-      case 1:
-        t400.setText("Executing Route: 1");
-        break;
-      case 2:
-        t400.setText("Executing Route: 2");
-        break;
-      case 3:
-        t400.setText("Executing Route: 3");
-        break;
-      case 4:
-        t400.setText("Executing Route: 4");
-        break;
-    }
-    return;
+  switch (currentPage) {
+    case 1:
+      displayText = String((gPTPCmd.x), 1);
+      Serial.println(displayText.c_str());
+      t100.setText(displayText.c_str());
+      displayText = String((gPTPCmd.y), 1);
+      Serial.println(displayText.c_str());
+      t103.setText(displayText.c_str());
+      displayText = String((gPTPCmd.z), 1);
+      Serial.println(displayText.c_str());
+      t106.setText(displayText.c_str());
+      break;
+    case 2:
+      displayText = "X: " + String((gPTPCmd.x), 1);
+      t200.setText(displayText.c_str());
+      displayText = "Y: " + String((gPTPCmd.y), 1);
+      t201.setText(displayText.c_str());
+      displayText = "Z: " + String((gPTPCmd.z), 1);
+      t202.setText(displayText.c_str());
+      switch (suction) {
+        case 0:
+          displayText = "SC: False";
+          break;
+        case 1:
+          displayText = "SC: True";
+          break;
+      }
+      t203.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(1);
+      t206.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(2);
+      t207.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(3);
+      t208.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(4);
+      t209.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(5);
+      t210.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(6);
+      t211.setText(displayText.c_str());
+      break;
+    case 4:
+      switch (currentRoute) {
+        case 1:
+          t400.setText("Executing Route: 1");
+          break;
+        case 2:
+          t400.setText("Executing Route: 2");
+          break;
+        case 3:
+          t400.setText("Executing Route: 3");
+          break;
+        case 4:
+          t400.setText("Executing Route: 4");
+          break;
+      }
+      break;
   }
 }
 
@@ -1186,10 +1210,10 @@ void loop() {
       //this command enables or disables the suction cup, dependant on the parameters
       case 1003:
         if (nextCommandParams.param1 == 1) {
-          SetEndEffectorSuctionCup(true, true, &gQueuedCmdIndex);
+          suck(true);
           queue.removeFromQueue(nextCommandIndex);
         } else if (nextCommandParams.param1 == 0) {
-          SetEndEffectorSuctionCup(false, true, &gQueuedCmdIndex);
+          suck(false);
           queue.removeFromQueue(nextCommandIndex);
         }
         if (currentPage == 2 || currentPage == 4) {
