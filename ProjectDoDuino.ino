@@ -638,6 +638,7 @@ void b400PopEventHandler(void *ptr) {
   suck(false);
   queue.addToQueue(p);
   page1.show();
+  currentPage = 1;
 
   //Serial.println("stop route");
 }
@@ -1053,6 +1054,7 @@ void setup() {
   bt310.attachPop(bt310PopEventHandler, &bt310);
   bt311.attachPop(bt311PopEventHandler, &bt311);
   page5.show();
+  currentPage = 5;
 
   pinMode(30, OUTPUT);  // relais output for sucking
   pinMode(32, OUTPUT);  // power for sensor
@@ -1136,6 +1138,7 @@ void loop() {
   ProtocolProcess();
   delay(1000);
   page6.show();
+  currentPage = 6;
 
   while (homed != 1) {
     nexLoop(nex_listen_list);
@@ -1144,6 +1147,7 @@ void loop() {
 
   printf("\r\n======Enter application======\r\n");
   page1.show();
+  currentPage = 1;
   for (;;) {
     Serial.println(currentPage);
     nexLoop(nex_listen_list);
@@ -1154,6 +1158,7 @@ void loop() {
     if (currentRoute != 0 && sensorInUse == 1 && routeRunning == false) {
       if (currentPage != 4) {
         page4.show();
+        currentPage = 4;
       }
       bool sensorOn = detectSensor();
       if (sensorOn == true) {
@@ -1165,6 +1170,7 @@ void loop() {
     } else if (currentRoute != 0 && loopInUse == 1 && routeRunning == false) {
       if (currentPage != 4) {
         page4.show();
+        currentPage = 4;
       }
       params routeToActivate;
       routeToActivate.command = 3003;
