@@ -29,31 +29,14 @@ int loopInUse = 0;
 int currentRoute = 0;
 float moveIncrement = 0;
 int currentPage = 1;
-//dual state button states
-int bt100State = -1;
-int bt101State = -1;
-int bt102State = -1;
-int bt103State = -1;
-int bt104State = -1;
-int bt300State = -1;
-int bt301State = -1;
-int bt302State = -1;
-int bt303State = -1;
-int bt304State = -1;
-int bt305State = -1;
-int bt306State = -1;
-int bt307State = -1;
-int bt308State = -1;
-int bt309State = -1;
-int bt310State = -1;
-int bt311State = -1;
+bool routeRunning = false;
 
 String displayText = "...";
 //pages on nextion screen
 NexPage page1 = NexPage(0, 0, "page1");  //page 0, reffered to as page 1, Controls page
 NexPage page2 = NexPage(1, 0, "page2");  //page 1, reffered to as page 2, Routes page
 NexPage page3 = NexPage(2, 0, "page3");  //page 2, reffered to as page 3, Use Routes page
-NexPage page4 = NexPage(3, 0, "page4");  //page 3, reffered to as page 4, Queue page
+NexPage page4 = NexPage(3, 0, "page4");  //page 3, reffered to as page 4, Executing Route page
 NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 5, Loading page
 NexPage page6 = NexPage(5, 0, "page6");  //page 0, reffered to as page 6, Homing page
 
@@ -351,24 +334,34 @@ public:
   }
 
   //push route to queue
-  void executeRoute() {
+  void executeRoute(int routeNumber) {
+    routeRunning = true;
+    queue.clearQueue();
     for (int i = 0; i <= 7; i++) {
-      params parameters1;
-      params parameters2;
-      parameters1.command = 3001;
-      parameters1.param1 = route[i].x;
-      parameters1.param2 = route[i].y;
-      parameters1.param3 = route[i].z;
+      if (route[i].x != 9999) {
+        params parameters1;
+        params parameters2;
+        parameters1.command = 3001;
+        parameters1.param1 = route[i].x;
+        parameters1.param2 = route[i].y;
+        parameters1.param3 = route[i].z;
 
-      parameters2.command = 3002;
-      parameters2.param1 = route[i].suction;
+        parameters2.command = 3002;
+        parameters2.param1 = route[i].suction;
 
-      queue.addToQueue(parameters1);
-      queue.addToQueue(parameters2);
+        queue.addToQueue(parameters1);
+        queue.addToQueue(parameters2);
+      }
     }
     if (loopInUse == 1) {
-      //push command to execute again to queue
+      params p;
+      p.command = 3003;
+      p.param1 = routeNumber;
+      queue.addToQueue(p);
     }
+    params end;
+    end.command = 3004;
+    queue.addToQueue(end);
   }
 
   void getRouteFromEEPROM(int routeNumber) {
@@ -479,8 +472,10 @@ void suck(bool suckIt) {
 bool detectSensor() {
   int sensorDetects = digitalRead(33);
   if (sensorDetects == 1) {
+    Serial.println("sensor on");
     return true;
   } else if (sensorDetects == 0) {
+    Serial.println("sensor off");
     return false;
   }
 }
@@ -504,7 +499,7 @@ void page3PushEventHandler(void *ptr) {
 }
 
 void page4PushEventHandler(void *ptr) {
-  //Serial.println("Page 4");
+  Serial.println("Page 4");
   currentPage = 4;
   updateScreen();
 }
@@ -634,7 +629,16 @@ void b205PopEventHandler(void *ptr) {
 }
 
 void b400PopEventHandler(void *ptr) {
+  queue.clearQueue();
+  params p;
+  p.command = 3001;
+  p.param1 = 122;
+  p.param2 = -2;
+  p.param3 = -42;
+  suck(false);
+  queue.addToQueue(p);
   page1.show();
+
   //Serial.println("stop route");
 }
 
@@ -1141,22 +1145,31 @@ void loop() {
   printf("\r\n======Enter application======\r\n");
   page1.show();
   for (;;) {
+    Serial.println(currentPage);
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
     nextCommandParams = queue.getNextInQueueValues();
     int nextCommand = nextCommandParams.command;
-    if (currentRoute != 0 && sensorInUse == 1) {
+    if (currentRoute != 0 && sensorInUse == 1 && routeRunning == false) {
       if (currentPage != 4) {
         page4.show();
       }
       bool sensorOn = detectSensor();
       if (sensorOn == true) {
         params routeToActivate;
-        routeToActivate.command = 3004;
+        routeToActivate.command = 3003;
         routeToActivate.param1 = currentRoute;
         queue.addToQueue(routeToActivate);
       }
+    } else if (currentRoute != 0 && loopInUse == 1 && routeRunning == false) {
+      if (currentPage != 4) {
+        page4.show();
+      }
+      params routeToActivate;
+      routeToActivate.command = 3003;
+      routeToActivate.param1 = currentRoute;
+      queue.addToQueue(routeToActivate);
     }
     switch (nextCommand) {
       //command is empty
@@ -1231,7 +1244,7 @@ void loop() {
         SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
         queue.removeFromQueue(nextCommandIndex);
         ProtocolProcess();
-        delay(1000);
+        delay(1500);
         break;
       case 3002:
         if (nextCommandParams.param1 == 1) {
@@ -1240,28 +1253,34 @@ void loop() {
           suck(false);
         }
         ProtocolProcess();
-        delay(1000);
+        queue.removeFromQueue(nextCommandIndex);
+        delay(200);
         break;
       case 3003:
         switch (currentRoute) {
           case 1:
             route1.getRouteFromEEPROM(1);
-            route1.executeRoute();
+            route1.executeRoute(1);
             break;
           case 2:
-            route1.getRouteFromEEPROM(2);
-            route1.executeRoute();
+            route2.getRouteFromEEPROM(2);
+            route2.executeRoute(2);
             break;
           case 3:
-            route1.getRouteFromEEPROM(3);
-            route1.executeRoute();
+            route3.getRouteFromEEPROM(3);
+            route3.executeRoute(3);
             break;
           case 4:
-            route1.getRouteFromEEPROM(4);
-            route1.executeRoute();
+            route4.getRouteFromEEPROM(4);
+            route4.executeRoute(4);
             break;
+            queue.removeFromQueue(nextCommandIndex);
         }
         break;
+      //route finished
+      case 3004:
+        routeRunning = false;
+        queue.removeFromQueue(nextCommandIndex);
     }
     delay(201);
   }
