@@ -373,73 +373,70 @@ public:
 
   void getRouteFromEEPROM(int routeNumber) {
     if (routeNumber == 1) {
-      int index = 1;
-      for (int i = 0; i <= 120; i += 20) {
+      int index = 0;
+      for (int i = 0; i <= 140; i += 20) {
         point readPoint;
         EEPROM.get(i, readPoint);
         Serial.print("index: ");
         Serial.print(index);
-        Serial.print(", x: ");
-        Serial.print(readPoint.x);
-        Serial.print(", y: ");
-        Serial.print(readPoint.y);
-        Serial.print(", z: ");
-        Serial.print(readPoint.z);
-        Serial.print(", suction: ");
-        Serial.println(readPoint.suction);
         route[index] = readPoint;
         index++;
       }
     } else if (routeNumber == 2) {
-      int index = 1;
-      for (int i = 140; i <= 260; i += 20) {
+      int index = 0;
+      for (int i = 160; i <= 300; i += 20) {
+        Serial.print("index: ");
+        Serial.print(index);
         point readPoint;
         EEPROM.get(i, readPoint);
         route[index] = readPoint;
         index++;
       }
     } else if (routeNumber == 3) {
-      int index = 1;
-      for (int i = 280; i <= 400; i += 20) {
+      int index = 0;
+      for (int i = 320; i <= 460; i += 20) {
+        Serial.print("index: ");
+        Serial.print(index);
         point readPoint;
         EEPROM.get(i, readPoint);
         route[index] = readPoint;
         index++;
       }
     } else if (routeNumber == 4) {
-      int index = 1;
-      for (int i = 420; i <= 540; i += 20) {
+      int index = 0;
+      for (int i = 480; i <= 620; i += 20) {
+        Serial.print("index: ");
+        Serial.print(index);
         point readPoint;
         EEPROM.get(i, readPoint);
         route[index] = readPoint;
         index++;
       }
     }
-    delay(100);
   }
 
   void saveRouteToEEPROM(int routeNumber) {
     if (routeNumber == 1) {
-      int index = 1;
-      for (int i = 0; i <= 120; i += 20) {
+      int index = 0;
+      for (int i = 0; i <= 140; i += 20) {
         EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 2) {
-      int index = 1;
-      for (int i = 140; i <= 260; i += 20) {
+      int index = 0;
+      for (int i = 160; i <= 300; i += 20) {
         EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 3) {
-      int index = 1;
-      for (int i = 280; i <= 400; i += 20) {
+      int index = 0;
+      for (int i = 320; i <= 460; i += 20) {
         EEPROM.put(i, route[index]);
         index++;
       }
     } else if (routeNumber == 4) {
-      int index = 1;
-      for (int i = 420; i <= 540; i += 20) {
+      int index = 0;
+      for (int i = 480; i <= 620; i += 20) {
         EEPROM.put(i, route[index]);
         index++;
       }
@@ -969,6 +966,8 @@ void updateScreen() {
           break;
       }
       t203.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(0);
+      t205.setText(displayText.c_str());
       displayText = tempRoute.getStringifiedPoint(1);
       t206.setText(displayText.c_str());
       displayText = tempRoute.getStringifiedPoint(2);
@@ -981,6 +980,8 @@ void updateScreen() {
       t210.setText(displayText.c_str());
       displayText = tempRoute.getStringifiedPoint(6);
       t211.setText(displayText.c_str());
+      displayText = tempRoute.getStringifiedPoint(7);
+      t212.setText(displayText.c_str());
       break;
     case 4:
       switch (currentRoute) {
