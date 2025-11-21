@@ -639,6 +639,10 @@ void b400PopEventHandler(void *ptr) {
   queue.addToQueue(p);
   page1.show();
   currentPage = 1;
+  currentRoute = 0;
+  sensorInUse = 0;
+  loopInUse = 0;
+  routeRunning = false;
 
   //Serial.println("stop route");
 }
