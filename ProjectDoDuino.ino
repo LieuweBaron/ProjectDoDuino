@@ -1295,7 +1295,7 @@ void loop() {
         }
         ProtocolProcess();
         queue.removeFromQueue(nextCommandIndex);
-        delay(500);
+        delay(1500);
         break;
       case 3003:
         switch (currentRoute) {
