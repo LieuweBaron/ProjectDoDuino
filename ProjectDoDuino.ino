@@ -908,7 +908,16 @@ int bounds[32][3] = {
   { -140, 150, 170 },
 };
 
+//not working
 bool inBounds(int x, int y, int z) {
+  Serial.print("X: ");
+  Serial.println(x);
+  Serial.print(", Y: ");
+  Serial.println(y);
+  Serial.print(", Z: ");
+  Serial.println(z);
+
+
   if (z >= 0) {
     z = floor(z / 10) * 10;
   } else if (z < 0) {
@@ -1191,7 +1200,7 @@ void loop() {
           Serial.println("out of bounds");
           break;
         } else {
-          int calculatedDelay = getDelay(gPTPCmd.x += nextCommandParams.param1, gPTPCmd.y += nextCommandParams.param2, gPTPCmd.z += nextCommandParams.param3);
+          int calculatedDelay = getDelay(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3);
           gPTPCmd.x += nextCommandParams.param1;
           gPTPCmd.y += nextCommandParams.param2;
           gPTPCmd.z += nextCommandParams.param3;
@@ -1214,7 +1223,7 @@ void loop() {
           Serial.println("main loop out of bounds");
           break;
         } else {
-          int calculatedDelay = getDelay(gPTPCmd.x -= nextCommandParams.param1, gPTPCmd.y -= nextCommandParams.param2, gPTPCmd.z -= nextCommandParams.param3);
+          int calculatedDelay = getDelay(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3);
           gPTPCmd.x -= nextCommandParams.param1;
           gPTPCmd.y -= nextCommandParams.param2;
           gPTPCmd.z -= nextCommandParams.param3;
