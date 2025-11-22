@@ -1220,6 +1220,7 @@ void loop() {
           Serial.println("out of bounds");
           break;
         } else {
+          int calculatedDelay = getDelay(gPTPCmd.x += nextCommandParams.param1, gPTPCmd.y += nextCommandParams.param2, gPTPCmd.z += nextCommandParams.param3);
           gPTPCmd.x += nextCommandParams.param1;
           gPTPCmd.y += nextCommandParams.param2;
           gPTPCmd.z += nextCommandParams.param3;
@@ -1230,7 +1231,7 @@ void loop() {
             updateScreen();
           }
           ProtocolProcess();
-          delay(1000);
+          delay(calculatedDelay);
           break;
         }
       //this is the command to move the dobot in the negative direction, parameters determine to where
@@ -1242,6 +1243,7 @@ void loop() {
           Serial.println("main loop out of bounds");
           break;
         } else {
+          int calculatedDelay = getDelay(gPTPCmd.x -= nextCommandParams.param1, gPTPCmd.y -= nextCommandParams.param2, gPTPCmd.z -= nextCommandParams.param3);
           gPTPCmd.x -= nextCommandParams.param1;
           gPTPCmd.y -= nextCommandParams.param2;
           gPTPCmd.z -= nextCommandParams.param3;
@@ -1258,7 +1260,7 @@ void loop() {
             updateScreen();
           }
           ProtocolProcess();
-          delay(1000);
+          delay(calculatedDelay);
           break;
         }
       //this command enables or disables the suction cup, dependant on the parameters
@@ -1273,7 +1275,7 @@ void loop() {
         if (currentPage == 2 || currentPage == 4) {
           updateScreen();
         }
-        delay(1000);
+        delay(500);
         ProtocolProcess();
         break;
 
