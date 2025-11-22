@@ -1192,9 +1192,9 @@ void loop() {
           Serial.println("out of bounds");
           break;
         } else {
-          displayText = "Bounds: ✓";
+          displayText = "Bounds: OK";
           t107.setText(displayText.c_str());
-          int calculatedDelay = getDelay(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3);
+          int calculatedDelay = getDelay (gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3);
           gPTPCmd.x += nextCommandParams.param1;
           gPTPCmd.y += nextCommandParams.param2;
           gPTPCmd.z += nextCommandParams.param3;
@@ -1217,7 +1217,7 @@ void loop() {
           Serial.println("main loop out of bounds");
           break;
         } else {
-          displayText = "Bounds: ✓";
+          displayText = "Bounds: OK";
           t107.setText(displayText.c_str());
           int calculatedDelay = getDelay(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3);
           gPTPCmd.x -= nextCommandParams.param1;
