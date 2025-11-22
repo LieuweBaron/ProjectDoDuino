@@ -910,14 +910,6 @@ int bounds[32][3] = {
 
 //not working
 bool inBounds(int x, int y, int z) {
-  Serial.print("X: ");
-  Serial.println(x);
-  Serial.print(", Y: ");
-  Serial.println(y);
-  Serial.print(", Z: ");
-  Serial.println(z);
-
-
   if (z >= 0) {
     z = floor(z / 10) * 10;
   } else if (z < 0) {
@@ -1195,11 +1187,13 @@ void loop() {
       case 1001:
         if (inBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
-          displayText = "!BOUNDS!";
+          displayText = "Bounds: X";
           t107.setText(displayText.c_str());
           Serial.println("out of bounds");
           break;
         } else {
+          displayText = "Bounds: ✓";
+          t107.setText(displayText.c_str());
           int calculatedDelay = getDelay(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3);
           gPTPCmd.x += nextCommandParams.param1;
           gPTPCmd.y += nextCommandParams.param2;
@@ -1218,11 +1212,13 @@ void loop() {
       case 1002:
         if (inBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
-          displayText = "!BOUNDS!";
+          displayText = "Bounds: X";
           t107.setText(displayText.c_str());
           Serial.println("main loop out of bounds");
           break;
         } else {
+          displayText = "Bounds: ✓";
+          t107.setText(displayText.c_str());
           int calculatedDelay = getDelay(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3);
           gPTPCmd.x -= nextCommandParams.param1;
           gPTPCmd.y -= nextCommandParams.param2;
