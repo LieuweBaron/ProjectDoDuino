@@ -660,26 +660,23 @@ void b400PopEventHandler(void *ptr) {
   sensorInUse = 0;
   loopInUse = 0;
   routeRunning = false;
-
-  //Serial.println("stop route");
 }
 
 void b600PopEventHandler(void *ptr) {
   //Serial.println("button b600 pressed");
-  params newParams;
-  newParams.command = 1002;
-  newParams.param1 = 67;
-  newParams.param2 = 2;
-  newParams.param3 = 42;
-  queue.addToQueue(newParams);
-  //currX = 189;
-  //currY = 0;
-  //currZ = 0;
-  //int params[4] = { -67, -2, -42, 500 };  //{ 181.8, -3, -41.4, 500 };
-  //Serial.println(gPTPCmd.x);
-  //Serial.println(gPTPCmd.y);
-  //Serial.println(gPTPCmd.z);
-
+  params p;
+  p.command = 3001;
+  p.param1 = 122;
+  p.param2 = -2;
+  p.param3 = -42;
+  suck(false);
+  queue.addToQueue(p);
+  page1.show();
+  currentPage = 1;
+  currentRoute = 0;
+  sensorInUse = 0;
+  loopInUse = 0;
+  routeRunning = false;
   homed = 1;
 }
 
@@ -770,6 +767,7 @@ void bt300PopEventHandler(void *ptr) {
 
 void bt301PopEventHandler(void *ptr) {
   //Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
+  route2.printRoute();
   uint32_t dual_state;
   bt301.getValue(&dual_state);
   if (dual_state) {
@@ -1175,10 +1173,7 @@ void loop() {
     nexLoop(nex_listen_list);
     delay(10);
   }
-
   printf("\r\n======Enter application======\r\n");
-  page1.show();
-  currentPage = 1;
   for (;;) {
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
