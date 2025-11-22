@@ -474,10 +474,8 @@ void suck(bool suckIt) {
 bool detectSensor() {
   int sensorDetects = digitalRead(33);
   if (sensorDetects == 1) {
-    Serial.println("sensor on");
     return true;
   } else if (sensorDetects == 0) {
-    Serial.println("sensor off");
     return false;
   }
 }
@@ -767,7 +765,6 @@ void bt300PopEventHandler(void *ptr) {
 
 void bt301PopEventHandler(void *ptr) {
   //Serial.println("button bt301 (activates route 2| [Activate Route 2]) pressed");
-  route2.printRoute();
   uint32_t dual_state;
   bt301.getValue(&dual_state);
   if (dual_state) {
@@ -1293,7 +1290,7 @@ void loop() {
       case 3002:
         if (nextCommandParams.param1 == 1) {
           suck(true);
-        } else if (nextCommandParams.param1 == 1) {
+        } else if (nextCommandParams.param1 == 0) {
           suck(false);
         }
         ProtocolProcess();
@@ -1305,21 +1302,25 @@ void loop() {
           case 1:
             route1.getRouteFromEEPROM(1);
             route1.executeRoute(1);
+            queue.printQueue();
             break;
           case 2:
             route2.getRouteFromEEPROM(2);
             route2.executeRoute(2);
+            queue.printQueue();
             break;
           case 3:
             route3.getRouteFromEEPROM(3);
             route3.executeRoute(3);
+            queue.printQueue();
             break;
           case 4:
             route4.getRouteFromEEPROM(4);
             route4.executeRoute(4);
+            queue.printQueue();
             break;
-            queue.removeFromQueue(nextCommandIndex);
         }
+        queue.removeFromQueue(nextCommandIndex);
         break;
       //route finished
       case 3004:
