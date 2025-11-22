@@ -150,19 +150,13 @@ struct params {
 };
 
 class cmdQueue {
-  //index that decides at which location a new item has to be added to the queue
   int addIndex;
-  //index that decides at which location a new item has to be removed from the queue
   int removeIndex;
-  //length of the queue
   int maxLength = 20;
-  //current length of the queue
   int currentLength;
-  //pointer to the location of the first item in the queue
   params queue[20];
 
 public:
-  //constuctor for queue
   cmdQueue() {
     addIndex = 1;
   }
@@ -210,18 +204,6 @@ public:
     return nextIndex;
   }
 
-
-  params getNextInQueueValues() {
-    params parameters;
-    for (int i = (maxLength - 1); i >= 0; i--) {
-      if (queue[i].command != 9999) {
-        parameters = queue[i];
-        break;
-      }
-    }
-    return parameters;
-  }
-
   params getQueueValuesOfIndex(int index) {
     return queue[index];
   }
@@ -229,7 +211,6 @@ public:
   void compressQueue() {
     int emptySlots[10] = { 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999, 9999 };
     int totalEmpty = 0;
-    //find the indexes at which a slot is empty (9999)
     for (int queueIndex = 0; queueIndex < (maxLength - 1); queueIndex++) {
       if (queue[queueIndex].command == 9999) {
         for (int emptySlotsIndex = 0; emptySlotsIndex < 9; emptySlotsIndex++) {
@@ -241,8 +222,6 @@ public:
         }
       }
     }
-    //move empty slots to the back of the queue, starting with the highest index empty slot
-    //this is achieved by swapping with the next item in the queue until either the end or another empty slot (9999) is found
     for (int emptySlotsIndex = totalEmpty - 1; emptySlotsIndex >= 0; emptySlotsIndex--) {
       int currentQueueIndex = emptySlots[emptySlotsIndex];
       while (!(currentQueueIndex >= maxLength - 1) && !(queue[currentQueueIndex + 1].command == 9999)) {
@@ -958,6 +937,19 @@ bool inBounds(int x, int y, int z) {
   }
 }
 
+int getDelay(int futureX, int futureY, int futureZ) {
+  int currentX = gPTPCmd.x;
+  int currentY = gPTPCmd.y;
+  int currentZ = gPTPCmd.z;
+  //calculate the absolute difference between current and future position;
+  int differenceX = abs(currentX-futureX);
+  int differenceY = abs(currentY-futureY);
+  int differenceZ = abs(currentZ-futureZ);
+  int delay = ((differenceX + differenceY + differenceZ) * 10) + 500;
+
+  return delay;
+}
+
 void updateScreen() {
   switch (currentPage) {
     case 1:
@@ -1139,19 +1131,6 @@ void InitRAM(void) {
   gQueuedCmdIndex = 0;
 }
 
-int getDelay(int futureX, int futureY, int futureZ) {
-  int currentX = gPTPCmd.x;
-  int currentY = gPTPCmd.y;
-  int currentZ = gPTPCmd.z;
-  //calculate the absolute difference between current and future position;
-  int differenceX = abs(currentX-futureX);
-  int differenceY = abs(currentY-futureY);
-  int differenceZ = abs(currentZ-futureZ);
-  int delay = ((differenceX + differenceY + differenceZ) * 10) + 500;
-
-  return delay;
-}
-
 void loop() {
   InitRAM();
   ProtocolInit();
@@ -1175,7 +1154,7 @@ void loop() {
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
-    nextCommandParams = queue.getNextInQueueValues();
+    nextCommandParams = queue.getQueueValuesOfIndex(nextCommandIndex);
     int nextCommand = nextCommandParams.command;
     if (currentRoute != 0 && sensorInUse == 1 && routeRunning == false) {
       if (currentPage != 4) {
