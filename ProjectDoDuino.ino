@@ -5,7 +5,6 @@
 #include <Nextion.h>
 #include <EEPROM.h>
 
-//Set Serial TX&RX Buffer Size
 #define SERIAL_TX_BUFFER_SIZE 64
 #define SERIAL_RX_BUFFER_SIZE 256
 
@@ -20,18 +19,18 @@ PTPCoordinateParams gPTPCoordinateParams;
 PTPCommonParams gPTPCommonParams;
 PTPCmd gPTPCmd;
 
-uint64_t gQueuedCmdIndex;
 bool homed = 0;
 bool sensorState = false;
+bool routeRunning = false;
 int suction = 0;
 int sensorInUse = 0;
 int loopInUse = 0;
 int currentRoute = 0;
-float moveIncrement = 0;
 int currentPage = 1;
-bool routeRunning = false;
-
+float moveIncrement = 0;
+uint64_t gQueuedCmdIndex;
 String displayText = "...";
+
 //pages on nextion screen
 NexPage page1 = NexPage(0, 0, "page1");  //page 0, reffered to as page 1, Controls page
 NexPage page2 = NexPage(1, 0, "page2");  //page 1, reffered to as page 2, Routes page
@@ -61,10 +60,10 @@ NexButton b600 = NexButton(5, 2, "b600");  //button that homing has been complet
 
 //dual-state buttons on nextion screen
 NexDSButton bt100 = NexDSButton(0, 17, "bt100");  //enable or disable suction cup
-NexDSButton bt101 = NexDSButton(0, 4, "bt101");  //increment of movement: 1, page 1
-NexDSButton bt102 = NexDSButton(0, 5, "bt102");  //increment of movement: 10, page 1
-NexDSButton bt103 = NexDSButton(0, 6, "bt103");  //increment of movement: 50, page 1
-NexDSButton bt104 = NexDSButton(0, 7, "bt104");  //increment of movement: 100, page 1
+NexDSButton bt101 = NexDSButton(0, 4, "bt101");   //increment of movement: 1, page 1
+NexDSButton bt102 = NexDSButton(0, 5, "bt102");   //increment of movement: 10, page 1
+NexDSButton bt103 = NexDSButton(0, 6, "bt103");   //increment of movement: 50, page 1
+NexDSButton bt104 = NexDSButton(0, 7, "bt104");   //increment of movement: 100, page 1
 
 NexDSButton bt300 = NexDSButton(2, 4, "bt300");   //button that activates route 1, page 3
 NexDSButton bt301 = NexDSButton(2, 5, "bt301");   //button that activates route 2, page 3
@@ -462,10 +461,13 @@ savedRoute route3;
 savedRoute route4;
 
 void suck(bool suckIt) {
-  if (suckIt == true) {
-    digitalWrite(30, HIGH);
-  } else if (suckIt == false) {
-    digitalWrite(30, LOW);
+  switch (suckIt) {
+    case true:
+      digitalWrite(30, HIGH);
+      break;
+    case false:
+      digitalWrite(30, LOW);
+      break;
   }
 }
 
@@ -1142,6 +1144,19 @@ void InitRAM(void) {
   gQueuedCmdIndex = 0;
 }
 
+int getDelay(int futureX, int futureY, int futureZ) {
+  int currentX = gPTPCmd.x;
+  int currentY = gPTPCmd.y;
+  int currentZ = gPTPCmd.z;
+  //calculate the absolute difference between current and future position;
+  int differenceX = abs(currentX-futureX);
+  int differenceY = abs(currentY-futureY);
+  int differenceZ = abs(currentZ-futureZ);
+  int delay = ((differenceX + differenceY + differenceZ) * 10) + 500;
+
+  return delay;
+}
+
 void loop() {
   InitRAM();
   ProtocolInit();
@@ -1201,7 +1216,7 @@ void loop() {
         if (inBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
           displayText = "!BOUNDS!";
-          t106.setText(displayText.c_str());
+          t107.setText(displayText.c_str());
           Serial.println("out of bounds");
           break;
         } else {
@@ -1223,7 +1238,7 @@ void loop() {
         if (inBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
           displayText = "!BOUNDS!";
-          t106.setText(displayText.c_str());
+          t107.setText(displayText.c_str());
           Serial.println("main loop out of bounds");
           break;
         } else {
@@ -1268,13 +1283,14 @@ void loop() {
           Serial.println("main loop out of bounds");
           break;
         } else {
+          int calculatedDelay = getDelay(nextCommandParams.param1, nextCommandParams.param2, nextCommandParams.param3);
           gPTPCmd.x = nextCommandParams.param1;
           gPTPCmd.y = nextCommandParams.param2;
           gPTPCmd.z = nextCommandParams.param3;
           SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
           queue.removeFromQueue(nextCommandIndex);
           ProtocolProcess();
-          delay(1500);
+          delay(calculatedDelay);
           break;
         }
       case 3002:
@@ -1285,7 +1301,7 @@ void loop() {
         }
         ProtocolProcess();
         queue.removeFromQueue(nextCommandIndex);
-        delay(200);
+        delay(500);
         break;
       case 3003:
         switch (currentRoute) {
