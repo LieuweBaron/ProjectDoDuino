@@ -910,7 +910,14 @@ int bounds[32][3] = {
 
 //not working
 bool inBounds(int x, int y, int z) {
-  if (z >= 0) {
+
+  if(z > 170) {
+    Serial.println("out of bounds");
+    return false;
+  } else if(z < -140) {
+    Serial.println("out of bounds");
+    return false;
+  }else if (z >= 0) {
     z = floor(z / 10) * 10;
   } else if (z < 0) {
     z = ceil(z / 10) * 10;
@@ -918,10 +925,6 @@ bool inBounds(int x, int y, int z) {
   float baseAngle = atan2(y, x) * (180.0 / 3.1415);
   if (!(baseAngle <= 90 && baseAngle >= -90)) {
     Serial.println(", out of bounds");
-    return false;
-  }
-  if (z > 170 || z < -140) {
-    Serial.println("out of bounds");
     return false;
   }
   double length = sqrt(pow(x, 2) + pow(y, 2));
