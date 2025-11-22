@@ -41,12 +41,12 @@ NexPage page5 = NexPage(4, 0, "page5");  //page 0, reffered to as page 5, Loadin
 NexPage page6 = NexPage(5, 0, "page6");  //page 0, reffered to as page 6, Homing page
 
 //buttons on nextion screen
-NexButton b100 = NexButton(0, 17, "b100");  //button that moves X in the + direction, page 1
-NexButton b101 = NexButton(0, 18, "b101");  //button that moves X in the - direction, page 1
-NexButton b102 = NexButton(0, 19, "b102");  //button that moves Y in the + direction, page 1
-NexButton b103 = NexButton(0, 20, "b103");  //button that moves Y in the - direction, page 1
-NexButton b104 = NexButton(0, 21, "b104");  //button that moves Z in the + direction, page 1
-NexButton b105 = NexButton(0, 22, "b105");  //button that moves Z in the - direction, page 1
+NexButton b100 = NexButton(0, 11, "b100");  //button that moves X in the + direction, page 1
+NexButton b101 = NexButton(0, 12, "b101");  //button that moves X in the - direction, page 1
+NexButton b102 = NexButton(0, 13, "b102");  //button that moves Y in the + direction, page 1
+NexButton b103 = NexButton(0, 14, "b103");  //button that moves Y in the - direction, page 1
+NexButton b104 = NexButton(0, 15, "b104");  //button that moves Z in the + direction, page 1
+NexButton b105 = NexButton(0, 16, "b105");  //button that moves Z in the - direction, page 1
 
 NexButton b200 = NexButton(1, 21, "b200");  //button that adds new point to trajectory, page 2
 NexButton b201 = NexButton(1, 4, "b201");   //button that saves trajectory to route 1, page 2
@@ -60,11 +60,11 @@ NexButton b400 = NexButton(3, 2, "b400");  //button that stops route from execut
 NexButton b600 = NexButton(5, 2, "b600");  //button that homing has been completed by the user, page 6
 
 //dual-state buttons on nextion screen
-NexDSButton bt100 = NexDSButton(0, 23, "bt100");  //enable or disable suction cup
-NexDSButton bt101 = NexDSButton(0, 10, "bt101");  //increment of movement: 0.1, page 1
-NexDSButton bt102 = NexDSButton(0, 11, "bt102");  //increment of movement: 1, page 1
-NexDSButton bt103 = NexDSButton(0, 12, "bt103");  //increment of movement: 10, page 1
-NexDSButton bt104 = NexDSButton(0, 13, "bt104");  //increment of movement: 50, page 1
+NexDSButton bt100 = NexDSButton(0, 17, "bt100");  //enable or disable suction cup
+NexDSButton bt101 = NexDSButton(0, 4, "bt101");  //increment of movement: 1, page 1
+NexDSButton bt102 = NexDSButton(0, 5, "bt102");  //increment of movement: 10, page 1
+NexDSButton bt103 = NexDSButton(0, 6, "bt103");  //increment of movement: 50, page 1
+NexDSButton bt104 = NexDSButton(0, 7, "bt104");  //increment of movement: 100, page 1
 
 NexDSButton bt300 = NexDSButton(2, 4, "bt300");   //button that activates route 1, page 3
 NexDSButton bt301 = NexDSButton(2, 5, "bt301");   //button that activates route 2, page 3
@@ -484,17 +484,26 @@ bool detectSensor() {
 void page1PushEventHandler(void *ptr) {
   //Serial.println("Page 1");
   currentPage = 1;
+  currentRoute = 0;
+  loopInUse = 0;
+  sensorInUse = 0;
   updateScreen();
 }
 
 void page2PushEventHandler(void *ptr) {
   //Serial.println("Page 2");
   currentPage = 2;
+  currentRoute = 0;
+  loopInUse = 0;
+  sensorInUse = 0;
   updateScreen();
 }
 void page3PushEventHandler(void *ptr) {
   //Serial.println("Page 3");
   currentPage = 3;
+  currentRoute = 0;
+  loopInUse = 0;
+  sensorInUse = 0;
   updateScreen();
 }
 
@@ -507,11 +516,17 @@ void page4PushEventHandler(void *ptr) {
 void page5PushEventHandler(void *ptr) {
   //Serial.println("Page 5");
   currentPage = 5;
+  currentRoute = 0;
+  loopInUse = 0;
+  sensorInUse = 0;
 }
 
 void page6pushEventHandler(void *ptr) {
   //Serial.println("Page 6");
   currentPage = 6;
+  currentRoute = 0;
+  loopInUse = 0;
+  sensorInUse = 0;
 }
 
 /*
@@ -917,7 +932,7 @@ int bounds[32][3] = {
   { -140, 150, 170 },
 };
 
-bool outOfBounds(int x, int y, int z) {
+bool inBounds(int x, int y, int z) {
   if (z >= 0) {
     z = floor(z / 10) * 10;
   } else if (z < 0) {
@@ -950,13 +965,10 @@ void updateScreen() {
   switch (currentPage) {
     case 1:
       displayText = String((gPTPCmd.x), 1);
-      Serial.println(displayText.c_str());
       t100.setText(displayText.c_str());
       displayText = String((gPTPCmd.y), 1);
-      Serial.println(displayText.c_str());
       t103.setText(displayText.c_str());
       displayText = String((gPTPCmd.z), 1);
-      Serial.println(displayText.c_str());
       t106.setText(displayText.c_str());
       break;
     case 2:
@@ -1153,7 +1165,6 @@ void loop() {
   page1.show();
   currentPage = 1;
   for (;;) {
-    Serial.println(currentPage);
     nexLoop(nex_listen_list);
     int nextCommandIndex = queue.getNextInQueueIndex();
     params nextCommandParams;
@@ -1187,8 +1198,10 @@ void loop() {
         break;
       //this is the command to move the dobot in the positive direction, parameters determine to where
       case 1001:
-        if (outOfBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
+        if (inBounds(gPTPCmd.x + nextCommandParams.param1, gPTPCmd.y + nextCommandParams.param2, gPTPCmd.z + nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
+          displayText = "!BOUNDS!";
+          t106.setText(displayText.c_str());
           Serial.println("out of bounds");
           break;
         } else {
@@ -1207,8 +1220,10 @@ void loop() {
         }
       //this is the command to move the dobot in the negative direction, parameters determine to where
       case 1002:
-        if (outOfBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
+        if (inBounds(gPTPCmd.x - nextCommandParams.param1, gPTPCmd.y - nextCommandParams.param2, gPTPCmd.z - nextCommandParams.param3) == false) {
           queue.removeFromQueue(nextCommandIndex);
+          displayText = "!BOUNDS!";
+          t106.setText(displayText.c_str());
           Serial.println("main loop out of bounds");
           break;
         } else {
@@ -1248,14 +1263,20 @@ void loop() {
         break;
 
       case 3001:
-        gPTPCmd.x = nextCommandParams.param1;
-        gPTPCmd.y = nextCommandParams.param2;
-        gPTPCmd.z = nextCommandParams.param3;
-        SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
-        queue.removeFromQueue(nextCommandIndex);
-        ProtocolProcess();
-        delay(1500);
-        break;
+        if (inBounds(nextCommandParams.param1, nextCommandParams.param2, nextCommandParams.param3) == false) {
+          queue.removeFromQueue(nextCommandIndex);
+          Serial.println("main loop out of bounds");
+          break;
+        } else {
+          gPTPCmd.x = nextCommandParams.param1;
+          gPTPCmd.y = nextCommandParams.param2;
+          gPTPCmd.z = nextCommandParams.param3;
+          SetPTPCmd(&gPTPCmd, true, &gQueuedCmdIndex);
+          queue.removeFromQueue(nextCommandIndex);
+          ProtocolProcess();
+          delay(1500);
+          break;
+        }
       case 3002:
         if (nextCommandParams.param1 == 1) {
           suck(true);
